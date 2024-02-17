@@ -68,6 +68,7 @@ const callAPIIndividual = async (body, parent, supplierList, requestFlow) => {
             scope = scope + uf;
         }
         scope = body.ambito.toLowerCase() == "detran" ? body.ambito + body.parametros.uf : scope;
+        scope = scope.toLowerCase();
 
         const filteredList = filterSupplierListByScopeAndRequestFlow(scope, body.parametros, body.produtos, requestFlow, supplierList);
         return await processSupplier(filteredList, scope ,body.parametros, parent);
@@ -172,7 +173,6 @@ const filterSupplierListByScopeAndRequestFlow = (scope, parameter ,products, req
     if (products && products[scope] && products[scope].length > 0) {
         filteredList = filteredList.filter(item => products[scope].includes(item.id));
     }
-    
     if(requestFlow == "painelmultas"){
         filteredList = filteredList.filter(item => item.Tipo_de_Consulta === 'Painel de Multas' && item.origemUF === parameter.uf && item.ativo === true);
     } else {
