@@ -67,9 +67,9 @@ const callAPIIndividual = async (body, parent, supplierList, requestFlow) => {
             const uf = body.uf || findPropertyInJSON(parent, 'uf');
             scope = scope + uf;
         }
+        scope = body.ambito.toLowerCase() == "detran" ? body.ambito + body.parametros.uf : scope;
 
-        scope = body.ambito.toLowerCase() == "detran" ? body.ambito + body.parametros.uf : body.ambito;
-        const filteredList = filterSupplierListByScopeAndRequestFlow(scope, body.produtos, requestFlow, supplierList);
+        const filteredList = filterSupplierListByScopeAndRequestFlow(scope, body.parametros, body.produtos, requestFlow, supplierList);
         return await processSupplier(filteredList, scope ,body.parametros, parent);
     } catch (e) {
         console.error(e);
@@ -164,18 +164,20 @@ const getFailedResponse = (fornecedor) => {
 
 }
 
-const filterSupplierListByScopeAndRequestFlow = (scope, products, requestFlow, supplierList) => {
+const filterSupplierListByScopeAndRequestFlow = (scope, parameter ,products, requestFlow, supplierList) => {
 
     let filteredList = supplierList;
 
-    if(products[scope] > 0) {
-       filteredList = filteredList.filter(item => products[scope].includes(item.id));
-    }
 
+    if (products && products[scope] && products[scope].length > 0) {
+        filteredList = filteredList.filter(item => products[scope].includes(item.id));
+    }
+    
     if(requestFlow == "painelmultas"){
         filteredList = filteredList.filter(item => item.Tipo_de_Consulta === 'Painel de Multas' && item.origemUF === parameter.uf && item.ativo === true);
     } else {
-        filteredList = filteredList.filter(item => item.ambito === scope && item.ativo === true);
+
+        filteredList = filteredList.filter(item => item.ambito == scope && item.ativo == true);
     }
 
     filteredList.sort(compareOrder);
