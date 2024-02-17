@@ -149,7 +149,7 @@ const processProductList = async (body, parent, supplierList, requestFlow) => {
 
             const productData = { response: result.value.data, logs: result.value.logs, logsError: result.value.logsError };
             // Adicionar os dados ao objeto de resultados usando o escopo do produto como chave
-            resultObject[productScope] = productData;
+            resultObject[productScope.toLocaleLowerCase()] = productData;
         });
 
 
