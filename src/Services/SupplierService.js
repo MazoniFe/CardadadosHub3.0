@@ -1,4 +1,4 @@
-const {findPropertyInJSON, fillEmptyArraysWithObject, editAllJsonProperties } = require("../Utils/JsonUtils");
+const {findPropertyInJSON, fillEmptyArraysWithObject, editAllJsonProperties, applyTrimToJSONStrings } = require("../Utils/JsonUtils");
 
 const mappingSupplierResponse = (supplier, response, logs) => {
     if(logs.status.toUpperCase() == "SUCESSO") {
@@ -12,6 +12,7 @@ const mappingSupplierResponse = (supplier, response, logs) => {
             }
     
             targetResponse = fillEmptyArraysWithObject(targetResponse);
+            targetResponse = applyTrimToJSONStrings(targetResponse);
             return targetResponse;
         } catch(err) {
             console.error(err);

@@ -1,8 +1,8 @@
 const express = require('express');
 const { HttpRequest } = require('./Client/HttpRequest');
-const { IndividualResponse } = require('./Client/HttpResponses');
+const { IndividualResponse,OrquestResponse } = require('./Client/HttpResponses');
 const { getRequestFlow } = require('./Utils/HttpUtils');
-const { callAPIIndividual } = require('./Services/APIService');
+const { callAPIIndividual, callAPIOrquest } = require('./Services/APIService');
 const app = express();
 const router = express.Router();
 
@@ -16,18 +16,17 @@ router.post('/buscar', async function(req, res) {
         const apiRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);  
         response = new IndividualResponse(databaseResponse.status, apiRequest.data, apiRequest.logs, apiRequest.logsError);
     } else if (requestFlow == 'orquest') {
+        const parentRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);
+        const orquestRequest = await callAPIOrquest(req.body, parentRequest, databaseResponse.data, requestFlow);
+        response = new OrquestResponse(databaseResponse.status, parentRequest.data, parentRequest.logs, orquestRequest ,parentRequest.logsError);
+        response.addProduct(req.body.ambito, parentRequest.data, parentRequest.logs, parentRequest.logsError);
 
     } else if (requestFlow == 'painelMultas'){
 
     }
 
-
     res.status(200).send(response);
 });
-
-
-
-
 
 app.use(express.json());
 app.use('/', router);

@@ -30,6 +30,30 @@ const findPropertyInJSON = (jsonObj, targetProperty) => {
     return foundValue;
 }
 
+const applyTrimToJSONStrings = (data) => {
+    // Verifica se o dado é uma string e aplica trim
+    if (typeof data === 'string') {
+        return data.trim();
+    }
+    
+    // Verifica se o dado é um array e aplica o trim em cada elemento
+    if (Array.isArray(data)) {
+        return data.map(item => applyTrimToJSONStrings(item));
+    }
+    
+    // Verifica se o dado é um objeto e aplica o trim em cada valor
+    if (data !== null && typeof data === 'object') {
+        const trimmedObject = {};
+        for (const key in data) {
+            trimmedObject[key] = applyTrimToJSONStrings(data[key]);
+        }
+        return trimmedObject;
+    }
+    
+    // Retorna o dado sem alteração caso não seja uma string, array ou objeto
+    return data;
+}
+
 // Função para preencher arrays vazios com um objeto
 const fillEmptyArraysWithObject = (jsonData) => {
     if (Array.isArray(jsonData)) {
@@ -112,4 +136,4 @@ const editAllJsonProperties = (json, newValue) => {
 
 }
 
-module.exports = {findPropertyInJSON, fillEmptyArraysWithObject, isJSON, mapJSONWithTextPropRecursive, convertXMLToJson, editAllJsonProperties}
+module.exports = {findPropertyInJSON, fillEmptyArraysWithObject, isJSON, mapJSONWithTextPropRecursive, convertXMLToJson, editAllJsonProperties, applyTrimToJSONStrings}

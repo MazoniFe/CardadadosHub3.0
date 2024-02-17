@@ -2,9 +2,9 @@ const {compareOrder, getErrorMessageResponse} = require("../Utils/PrimitiveUtils
 const {HttpRequest} = require("../Client/HttpRequest");
 const {Logs, LogsError} = require("../Entities/Logs");
 const { buildURL, buildHeadersAndData, responseIsValid, buildAPIResponse } = require("../Utils/HttpUtils");
-const { response } = require("express");
 const { extractDataFromXML, isXMLResponse, isXMLData } = require("../Utils/XmlUtils");
 const { mappingSupplierResponse } = require("./SupplierService");
+const { editAllJsonProperties, findPropertyInJSON } = require("../Utils/JsonUtils");
 
 const callAPIWithTimeout = (url, fornecedor, timeoutMilliseconds) => {
     const apiPromise = callAPI(url, fornecedor);
@@ -12,7 +12,7 @@ const callAPIWithTimeout = (url, fornecedor, timeoutMilliseconds) => {
     const timeoutPromise = new Promise((_, reject) => {
         const timeoutId = setTimeout(() => {
             clearTimeout(timeoutId);
-            reject(new Error('Timeout da requisição excedido'));
+            reject({error: "Timeout Excedido!", data: fornecedor});
         }, timeoutMilliseconds);
     });
 
@@ -62,26 +62,40 @@ const callAPI = async (urlData, supplier) => {
 
 const callAPIIndividual = async (body, parent, supplierList, requestFlow) => {
     try{
-        const filteredList = filterSupplierListByScoreAndRequestFlow(body.ambito, body.parametros, requestFlow, supplierList);
-        return await processSupplier(filteredList, body.ambito ,body.parametros, parent);
-    } catch (e) {
+        let scope = body.ambito;
+        if(scope.toLowerCase() == "detran") {
+            const uf = body.uf || findPropertyInJSON(parent, 'uf');
+            scope = scope + uf;
+        }
 
+        scope = body.ambito.toLowerCase() == "detran" ? body.ambito + body.parametros.uf : body.ambito;
+        const filteredList = filterSupplierListByScopeAndRequestFlow(scope, body.produtos, requestFlow, supplierList);
+        return await processSupplier(filteredList, scope ,body.parametros, parent);
+    } catch (e) {
+        console.error(e);
     }
 }
 
+const callAPIOrquest = async (body, parent ,supplierList, requestFlow) => {
+    try{
+        return await processProductList(body, parent, supplierList, requestFlow);
+    } catch (e) {
+        console.error(e);
+    }
+}
 
 const processSupplier = async (supplierList, scope, parameter, parent) => {
+    let requestSuccess = false;
+    let response
+    let logsError = new LogsError(scope);
+    let logs;
+    let currentDate;
     try{
-        let requestSuccess = false;
-        let response
-        let logsError = new LogsError(scope);
-        let logs;
-
         for (let supplier of supplierList){
             if(requestSuccess) continue;
-            const url = buildURL(supplier, parameter, parent);
-            const currentDate = Date.now();
-            response = await callAPIWithTimeout(url, supplier, supplier.timeoutMilliseconds || 60000);
+            url = buildURL(supplier, parameter, parent);
+            currentDate = Date.now();
+            response = await callAPIWithTimeout(url, supplier, supplier.timeoutMilliseconds || 25000);
             logs = new Logs(url, response, supplier, currentDate, null)
             if(logs.status.toUpperCase() == "SUCESSO"){
                 requestSuccess = true;
@@ -94,23 +108,79 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
         }
         return {data: response, logs, logsError};
     } catch(e) {
-        console.log(e);
-        return {data: response, logs, logsError};
+        const failedResponse = getFailedResponse(e.data);
+        
+        url = buildURL(e.data, parameter, parent);
+        logs = new Logs(url, response, e.data, currentDate, e.error);
+        logs.setStatus("FALHA");
+        logsError.addLog(logs);
+
+        currentDate = Date.now();
+        return {data: failedResponse, logs, logsError};
     }
 }
 
+const processProductList = async (body, parent, supplierList, requestFlow) => {
+    try {
+        const parameters = body.parametros;
+        const products = Object.entries(body.produtos).filter(([key, value]) => key !== body.ambito);
 
-const filterSupplierListByScoreAndRequestFlow = (scope, parameter, requestFlow, supplierList) => {
+        console.log(products);
+
+        const productRequests = products.map(([productScope, productData]) => {
+            const requestBody = { ambito: productScope, parametros: parameters, produtos: productData };
+            return callAPIIndividual(requestBody, parent, supplierList, requestFlow);
+        });
+        
+
+        const promiseResults = await Promise.allSettled(productRequests);
+
+        // Criar um objeto para armazenar os resultados
+        const resultObject = {};
+
+        // Iterar sobre os resultados das promessas
+        promiseResults.forEach((result, index) => {
+            // Obtendo o escopo do produto
+            let productScope = products[index][0];
+
+            // Condição para modificar o escopo do produto, se necessário
+            productScope = productScope.toLowerCase() === "detran" ? productScope + parameters.uf : productScope;
+
+            const productData = { response: result.value.data, logs: result.value.logs, logsError: result.value.logsError };
+            // Adicionar os dados ao objeto de resultados usando o escopo do produto como chave
+            resultObject[productScope] = productData;
+        });
+
+
+        return resultObject;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+const getFailedResponse = (fornecedor) => {
+    const response = editAllJsonProperties(fornecedor.retorno_padrao, "Indisponível");
+    return response;
+
+}
+
+const filterSupplierListByScopeAndRequestFlow = (scope, products, requestFlow, supplierList) => {
+
+    let filteredList = supplierList;
+
+    if(products[scope] > 0) {
+       filteredList = filteredList.filter(item => products[scope].includes(item.id));
+    }
+
     if(requestFlow == "painelmultas"){
-        let filteredList = upplierList.filter(item => item.Tipo_de_Consulta === 'Painel de Multas' && item.origemUF === parameter.uf && item.ativo === true);
-        filteredList.sort(compareOrder);
-        return filteredList;
+        filteredList = filteredList.filter(item => item.Tipo_de_Consulta === 'Painel de Multas' && item.origemUF === parameter.uf && item.ativo === true);
     } else {
-        let filteredList = supplierList.filter(item => item.ambito === scope && item.ativo === true);
-        filteredList.sort(compareOrder);
-        return filteredList;
+        filteredList = filteredList.filter(item => item.ambito === scope && item.ativo === true);
     }
+
+    filteredList.sort(compareOrder);
+    return filteredList;
 }
 
 
-module.exports = {callAPIIndividual};
+module.exports = {callAPIIndividual, callAPIOrquest};
