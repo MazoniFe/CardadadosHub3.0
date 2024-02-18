@@ -1,7 +1,6 @@
 
 class IndividualResponse {
-    constructor(status, response, logs, logsError) {
-        this.status = status;
+    constructor(response, logs, logsError) {
         this.response = response;
         this.logs = logs;
         this.logsError = logsError;
@@ -9,28 +8,26 @@ class IndividualResponse {
 }
 
 class OrquestResponse {
-    constructor(status, response, logs, products, logsError) {
-        this.status = status;
+    constructor(response, logs, products, parentLogsError) {
         this.response = response;
         this.logs = logs;
         this.products = products;
-        this.logsError = logsError;
-
         // Inicializa a propriedade logsError como um objeto vazio
-        this.logsError = {};
+        this.logsError = [];
 
         // Vincula os logs de erro de cada item em products à propriedade logsError
-        this.bindLogsError(products);
+        this.bindLogsError(products, parentLogsError);
         // Remove a propriedade logsError de cada item em products
         this.products = this.removeLogsErrorFromProducts(products);
     }
 
-    bindLogsError(products) {
+    bindLogsError(products, parentLogsError) {
+        if(parentLogsError.results.length > 0) this.logsError.push(parentLogsError);
         for (const key in products) {
             if (Object.prototype.hasOwnProperty.call(products, key)) {
                 const item = products[key];
-                // Adiciona os logs de erro do item atual ao objeto this.logsError
-                this.logsError = { ...this.logsError, ...item.logsError };
+                if(item.logsError.results.length > 0)
+                this.logsError.push(item.logsError);
             }
         }
     }
@@ -40,12 +37,11 @@ class OrquestResponse {
         this.products[scope] = product;
 
         if(logsError.results.length > 0) {
-
-            this.logsError = {...this.logsError, logsError};
+            this.logsError.push(logsError);
         }
 
     }
-    
+
     removeLogsErrorFromProducts(products) {
         const result = {};
         for (const key in products) {
@@ -58,4 +54,44 @@ class OrquestResponse {
     }
 }
 
-module.exports = { IndividualResponse, OrquestResponse };
+class FinesPanelResponse {
+    constructor(response, logs, finesPanel, parentLogsError, correctedInfractions) {
+        this.response = response;
+        this.logs = logs;
+        this.painelMultas = finesPanel;
+        this.infracoesCorrigidas = correctedInfractions;
+        this.logsError = [];
+
+        this.bindLogsError(finesPanel, parentLogsError);
+        this.painelMultas = this.removeLogsErrorFromProducts(finesPanel);
+
+
+    }
+
+    bindLogsError(products, parentLogsError) {
+        if (parentLogsError && parentLogsError.results && parentLogsError.results.length > 0) {
+            this.logsError.push(parentLogsError);
+        }
+        for (const key in products) {
+            if (Object.prototype.hasOwnProperty.call(products, key)) {
+                const item = products[key];
+                if (item.logsError && item.logsError.results && item.logsError.results.length > 0) {
+                    this.logsError.push(item.logsError);
+                }
+            }
+        }
+    }    
+
+    removeLogsErrorFromProducts(products) {
+        const result = {};
+        for (const key in products) {
+            if (Object.prototype.hasOwnProperty.call(products, key)) {
+                const { logsError, ...rest } = products[key];
+                result[key] = rest; // Adiciona o objeto sem a propriedade logsError ao resultado
+            }
+        }
+        return result;
+    }
+}
+
+module.exports = { IndividualResponse, OrquestResponse, FinesPanelResponse };

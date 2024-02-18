@@ -1,4 +1,5 @@
 const {findPropertyInJSON, fillEmptyArraysWithObject, editAllJsonProperties, applyTrimToJSONStrings } = require("../Utils/JsonUtils");
+const { compareOrder } = require("../Utils/PrimitiveUtils");
 
 const mappingSupplierResponse = (supplier, response, logs) => {
     if(logs.status.toUpperCase() == "SUCESSO") {
@@ -23,7 +24,31 @@ const mappingSupplierResponse = (supplier, response, logs) => {
     }
 }
 
+const filterSupplierListByScopeAndRequestFlow = (scope, parameter ,products, requestFlow, supplierList) => {
+
+    let filteredList = supplierList;
+
+
+    if (products && products[scope] && products[scope].length > 0) {
+        filteredList = filteredList.filter(item => products[scope].includes(item.id));
+    }
+    if(requestFlow == "painelmultas"){
+        filteredList = filteredList.filter(item => item.Tipo_de_Consulta === 'Painel de Multas' && item.origemUF === parameter.uf && item.ativo === true);
+    } else {
+
+        filteredList = filteredList.filter(item => item.ambito == scope && item.ativo == true);
+    }
+
+    filteredList.sort(compareOrder);
+    return filteredList;
+}
+
+const getFailedResponse = (fornecedor) => {
+    const response = editAllJsonProperties(fornecedor.retorno_padrao, "Indisponível");
+    return response;
+
+}
 
 
 
-module.exports = {mappingSupplierResponse};
+module.exports = {mappingSupplierResponse, filterSupplierListByScopeAndRequestFlow, getFailedResponse};

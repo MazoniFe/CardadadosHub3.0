@@ -1,8 +1,10 @@
 const express = require('express');
 const { HttpRequest } = require('./Client/HttpRequest');
-const { IndividualResponse,OrquestResponse } = require('./Client/HttpResponses');
 const { getRequestFlow } = require('./Utils/HttpUtils');
-const { callAPIIndividual, callAPIOrquest } = require('./Services/APIService');
+const { callAPIIndividual } = require('./Services/IndividualService');
+const { callAPIOrquest } = require('./Services/OrquestService');
+const { callFinesPanel } = require('./Services/FinesPanelService');
+const { FinesPanelResponse, OrquestResponse } = require('./Client/HttpResponses');
 const app = express();
 const router = express.Router();
 
@@ -14,15 +16,17 @@ router.post('/buscar', async function(req, res) {
     
     if(requestFlow == 'individual') {
         const apiRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);  
-        response = new IndividualResponse(databaseResponse.status, apiRequest.data, apiRequest.logs, apiRequest.logsError);
+        response = new IndividualResponse(apiRequest.data, apiRequest.logs, apiRequest.logsError);
     } else if (requestFlow == 'orquest') {
         const parentRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);
         const orquestRequest = await callAPIOrquest(req.body, parentRequest, databaseResponse.data, requestFlow);
-        response = new OrquestResponse(databaseResponse.status, parentRequest.data, parentRequest.logs, orquestRequest ,parentRequest.logsError);
+        response = new OrquestResponse(parentRequest.data, parentRequest.logs, orquestRequest, parentRequest.logsError);
         response.addProduct(req.body.ambito, parentRequest.data, parentRequest.logs, parentRequest.logsError);
 
     } else if (requestFlow == 'painelMultas'){
-
+        const parentRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);
+        const finelPanelRequest = await callFinesPanel(req.body, parentRequest, databaseResponse.data, requestFlow);
+        response = new FinesPanelResponse(parentRequest.data, parentRequest.logs, finelPanelRequest.data, parentRequest.logsError, finelPanelRequest.correctedInfractions);
     }
 
     res.status(200).send(response);
