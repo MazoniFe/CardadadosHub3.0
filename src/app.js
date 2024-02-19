@@ -4,7 +4,7 @@ const { getRequestFlow } = require('./Utils/HttpUtils');
 const { callAPIIndividual } = require('./Services/IndividualService');
 const { callAPIOrquest } = require('./Services/OrquestService');
 const { callFinesPanel } = require('./Services/FinesPanelService');
-const { FinesPanelResponse, OrquestResponse } = require('./Client/HttpResponses');
+const { FinesPanelResponse, OrquestResponse, IndividualResponse } = require('./Client/HttpResponses');
 const app = express();
 const router = express.Router();
 
@@ -29,6 +29,8 @@ router.post('/buscar', async function(req, res) {
         response = new FinesPanelResponse(parentRequest.data, parentRequest.logs, finelPanelRequest.data, parentRequest.logsError, finelPanelRequest.correctedInfractions);
     }
 
+
+    
     res.status(200).send(response);
 });
 

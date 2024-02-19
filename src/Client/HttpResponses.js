@@ -65,7 +65,6 @@ class FinesPanelResponse {
         this.bindLogsError(finesPanel, parentLogsError);
         this.painelMultas = this.removeLogsErrorFromProducts(finesPanel);
 
-
     }
 
     bindLogsError(products, parentLogsError) {

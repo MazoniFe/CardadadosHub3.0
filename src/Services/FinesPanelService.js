@@ -27,6 +27,7 @@ const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
             const response = await callAPIIndividual(requestBody, parent, supplierList, requestFlow);
             return { content: response, supplier: item };
         });
+        
 
         const promiseResults = await Promise.allSettled(productRequests);
 
