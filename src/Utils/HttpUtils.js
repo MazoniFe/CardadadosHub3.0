@@ -12,7 +12,7 @@ const getRequestFlow = (reqBody) => {
     return "orquest";
   } else if (
     reqBody.tipo != null && reqBody.tipo != undefined &&
-    reqBody.tipo.toLowerCase().trim()  == "painelmultas" &&
+    reqBody.tipo.toLowerCase().trim() == "painelmultas" &&
     ["agregados", "estadual", "nacional"].includes(reqBody.ambito)
   ) {
     return "painelMultas";
@@ -25,15 +25,15 @@ const buildAPIResponse = async (apiResponse, outputFormat) => {
   let returnValue = null;
   let mappedResult = apiResponse;
 
-  if(isXMLData(mappedResult)) 
-  mappedResult = await convertXMLToJson(mappedResult);
+  if (isXMLData(mappedResult))
+    mappedResult = await convertXMLToJson(mappedResult);
 
-   mappedResult = mappedResult.NewDataSet
+  mappedResult = mappedResult.NewDataSet
     ? mapJSONWithTextPropRecursive(mappedResult).NewDataSet
     : mapJSONWithTextPropRecursive(mappedResult);
-    mappedResult = fixSingleDepthArrays(mappedResult);
+  mappedResult = fixSingleDepthArrays(mappedResult);
 
-    try {
+  try {
     switch (outputFormat) {
       case "JSON":
         returnValue = JSON.parse(JSON.stringify(mappedResult));
@@ -116,24 +116,44 @@ const responseIsValid = (response, api) => {
 
 const isRequestFailed = (supplier, apiResponse) => {
   const operator = getSupplierOperator(supplier);
-  const erroConterSplit = supplier.erro_conter.split(operator);
-  const errorProperty = erroConterSplit[0];
-  const errorValue = erroConterSplit[1];
-  const existsErrorConterProperty =
-    findPropertyInJSON(apiResponse, errorProperty) != undefined &&
-    findPropertyInJSON(apiResponse, errorProperty) != null;
+  const erroConter = supplier.erro_conter.replace(" ", "");
 
+  // Divide a string de condição em partes separadas por operadores lógicos
+  const conditions = erroConter.split(/&&|\|\|/);
+  console.log(conditions);
 
-  const filterErrorConterPropertyFromAPI = findPropertyInJSON(
-    apiResponse,
-    errorProperty
-  );
+  // Avalia cada condição individualmente
+  const results = conditions.map(condition => {
+    // Divide cada condição em propriedade e operador
+    const [property, op, value] = condition.match(/([^=!<>]+)([=!<>]+)([^=!<>]+)/).slice(1);
 
-  return (
-    existsErrorConterProperty &&
-    operatorComparer(filterErrorConterPropertyFromAPI, errorValue, operator)
-  );
+    // Avalia a condição
+    const propertyValue = findPropertyInJSON(apiResponse, property.trim());
+    switch (op.trim()) {
+      case '=': return propertyValue == value;
+      case '!=': return propertyValue != value;
+      case '<': return propertyValue < value;
+      case '>': return propertyValue > value;
+      case '<=': return propertyValue <= value;
+      case '>=': return propertyValue >= value;
+      default: throw new Error(`Operador "${op}" não suportado.`);
+    }
+  });
+
+  // Combina os resultados com base nos operadores lógicos
+  const logicalOperators = erroConter.match(/&&|\|\|/g) || [];
+  let result = results[0];
+  logicalOperators.forEach((logicalOperator, index) => {
+    if (logicalOperator === '&&') {
+      result = result && results[index + 1];
+    } else {
+      result = result || results[index + 1];
+    }
+  });
+
+  return result;
 };
+
 
 const getSupplierOperator = (supplier) => {
   if (supplier.erro_conter.includes("!=")) {
