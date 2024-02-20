@@ -20,12 +20,12 @@ router.post('/buscar', async function(req, res) {
     } else if (requestFlow == 'orquest') {
         const parentRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);
         const orquestRequest = await callAPIOrquest(req.body, parentRequest, databaseResponse.data, requestFlow);
-        response = new OrquestResponse(parentRequest.data, parentRequest.logs, orquestRequest, parentRequest.logsError);
+        response = new OrquestResponse(parentRequest.response, parentRequest.logs, orquestRequest, parentRequest.logsError);
         response.addProduct(req.body.ambito, parentRequest.response, parentRequest.logs, parentRequest.logsError);
     } else if (requestFlow == 'painelMultas'){
         const parentRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);
         const finelPanelRequest = await callFinesPanel(req.body, parentRequest, databaseResponse.data, requestFlow);
-        response = new FinesPanelResponse(parentRequest.response, parentRequest.logs, finelPanelRequest.data, parentRequest.logsError, finelPanelRequest.correctedInfractions);
+        response = new FinesPanelResponse(parentRequest.response, parentRequest.logs, finelPanelRequest.response, parentRequest.logsError, finelPanelRequest.correctedInfractions);
     }
 
 

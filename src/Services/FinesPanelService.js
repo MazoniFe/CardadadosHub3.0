@@ -41,6 +41,7 @@ const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
                 response['logs'] = logs;
                 response['logsError'] =  logsError;
             }
+;
             return { content: response, supplier: item };
         }); 
 
@@ -53,9 +54,9 @@ const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
             let productScope = result.value.content.logs.scope;
             // Condição para modificar o escopo do produto, se necessário
             productScope = productScope.toLowerCase() === "detran" ? productScope + parameters.uf : productScope;
-            const productData = { response: result.value.content.data, logs: result.value.content.logs, logsError: result.value.content.logsError };
+            const productData = { response: result.value.content.response, logs: result.value.content.logs, logsError: result.value.content.logsError };
             resultObject[productScope.toLocaleLowerCase()] = productData;
-            processInfractionCorrections(result.value.content.data, result.value.supplier);
+            processInfractionCorrections(result.value.content.response, result.value.supplier);
         });
 
 
@@ -109,18 +110,16 @@ const processInfractionCorrections = (response, supplier) => {
             }
 
             if (short_ait.length <= 6) {
-                console.log("cole");
                 if (short_ait.length <= 5) {
                     switch (fornecedor.fonte) {
                         case 'FAZENDA':
                         case 'DER':
-                            console.log("DER ou FAZENDA");
+
                             short_ait = formated_ait.substring(1, 7);
                             break;
                         case 'AIT':
                         case 'PREFEITURA':
                         case 'RENAINF':
-                            console.log("AIT, PREFEITURA, RENAIFN");
                             short_ait = formated_ait.substring(2, 9);
                             break;
                         default:
@@ -128,7 +127,6 @@ const processInfractionCorrections = (response, supplier) => {
                             break;
                     }
                 }
-                console.log("eae");
                 short_ait += '1';
             }
 
