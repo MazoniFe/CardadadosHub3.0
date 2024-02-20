@@ -34,7 +34,9 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
             url = buildURL(supplier, parameter, parent);
             currentDate = Date.now();
             response = await callAPIWithTimeout(url, supplier, supplier.timeout || 25000);
+            console.log(response);
             logs = new Logs(url, response, supplier, currentDate, null)
+
             if (logs.status.toUpperCase() == "SUCESSO") {
                 requestSuccess = true;
                 logs.setMessage("Requisicao realizada com sucesso!");
