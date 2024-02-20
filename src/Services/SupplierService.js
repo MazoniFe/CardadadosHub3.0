@@ -28,23 +28,25 @@ const filterSupplierListByScopeAndRequestFlow = (scope, parameter ,products, req
 
     let filteredList = supplierList;
 
-
     if (products && products[scope] && products[scope].length > 0) {
         filteredList = filteredList.filter(item => products[scope].includes(item.id));
     }
     if(requestFlow == "painelmultas"){
         filteredList = filteredList.filter(item => item.Tipo_de_Consulta === 'Painel de Multas' && item.origemUF === parameter.uf && item.ativo === true);
     } else {
-
-        filteredList = filteredList.filter(item => item.ambito == scope && item.ativo == true);
+        filteredList = scope.toLowerCase() == "detran" 
+        ? 
+        filteredList.filter(item => item.ambito == scope && item.ativo == true && item.origemUF.toLowerCase() == parameter.uf.toLowerCase())
+        : 
+        filteredList.filter(item => item.ambito == scope && item.ativo == true);
     }
 
     filteredList.sort(compareOrder);
     return filteredList;
 }
 
-const getFailedResponse = (fornecedor) => {
-    const response = editAllJsonProperties(fornecedor.retorno_padrao, "Indisponível");
+const getFailedResponse = (supplier) => {
+    const response = editAllJsonProperties(supplier.retorno_padrao, "Indisponível");
     return response;
 }
 

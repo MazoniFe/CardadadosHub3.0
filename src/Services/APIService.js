@@ -2,13 +2,13 @@ const {HttpRequest} = require("../Client/HttpRequest");
 const { buildHeadersAndData, responseIsValid, buildAPIResponse } = require("../Utils/HttpUtils");
 const { extractDataFromXML, isXMLResponse, isXMLData } = require("../Utils/XmlUtils");
 
-const callAPIWithTimeout = (url, fornecedor, timeoutMilliseconds) => {
-    const apiPromise = callAPI(url, fornecedor);
+const callAPIWithTimeout = (url, supplier, timeoutMilliseconds) => {
+    const apiPromise = callAPI(url, supplier);
 
     const timeoutPromise = new Promise((_, reject) => {
         const timeoutId = setTimeout(() => {
             clearTimeout(timeoutId);
-            reject({error: "Timeout Excedido!", data: fornecedor});
+            reject({error: "Timeout Excedido!", data: supplier});
         }, timeoutMilliseconds);
     });
 
@@ -33,7 +33,7 @@ const callAPI = async (urlData, supplier) => {
             data: supplier.tipo_requisicao === "POST" ? dataObject.data : null,
         };
             const apiResponse = await http.request(requestOptions);
-            // Verificando se a resposta da API é válida
+            // Verificando se a resposta da  API é válida
             if (responseIsValid(apiResponse, urlData)) {
                 responseAPI = { res: apiResponse, api: apiResponse.data };
             }
@@ -52,7 +52,7 @@ const callAPI = async (urlData, supplier) => {
         } 
     
     catch (error) {
-        // Lidando com erros
+        console.error(error);
     }
 };
 

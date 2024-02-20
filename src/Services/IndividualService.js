@@ -7,14 +7,7 @@ const { filterSupplierListByScopeAndRequestFlow, mappingSupplierResponse, getFai
 
 const callAPIIndividual = async (body, parent, supplierList, requestFlow) => {
     try {
-        let scope = body.ambito;
-        if (scope.toLowerCase() == "detran") {
-            const uf = body.uf || findPropertyInJSON(parent, 'uf');
-            scope = scope + uf;
-        }
-        scope = body.ambito.toLowerCase() == "detran" ? body.ambito + body.parametros.uf : scope;
-        scope = scope.toLowerCase();
-
+        let scope = body.ambito.toLowerCase();
         const filteredList = filterSupplierListByScopeAndRequestFlow(scope, body.parametros, body.produtos, requestFlow, supplierList);
         return await processSupplier(filteredList, scope, body.parametros, parent);
     } catch (e) {
@@ -33,7 +26,7 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
             if (requestSuccess) continue;
             url = buildURL(supplier, parameter, parent);
             currentDate = Date.now();
-            response = await callAPIWithTimeout(url, supplier, supplier.timeout || 25000);
+            response = await callAPIWithTimeout(url, supplier, supplier.timeout || 12000);
             logs = new Logs(url, response, supplier, currentDate, null)
 
             if (logs.status.toUpperCase() == "SUCESSO") {
@@ -47,10 +40,11 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
         }
         return { response:response, logs, logsError };
     } catch (e) {
-        const failedResponse = getFailedResponse(e.response);
+        console.error(e);
+        const failedResponse = getFailedResponse(e.data);
 
-        url = buildURL(e.response, parameter, parent);
-        logs = new Logs(url, response, e.response, currentDate, e.error);
+        url = buildURL(e.data, parameter, parent);
+        logs = new Logs(url, response, e.data, currentDate, e.error);
         logs.setStatus("FALHA");
         logsError.addLog(logs);
 
