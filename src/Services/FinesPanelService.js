@@ -17,11 +17,10 @@ const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
         const parameters = body.parametros;
 
         //const products = Object.entries(body.produtos).filter(([key, value]) => key !== body.ambito);
-        let uf = findPropertyInJSON(parent, "uf") || parameters.uf || parameters.UF;
+        let uf = parameters.uf || parameters.UF || findPropertyInJSON(parent, "uf");
         uf = uf.toLowerCase();
 
-        const products = supplierList.filter(item => item.Tipo_de_Consulta == "Painel de Multas" && item.origemUF == uf);
-
+        const products = supplierList.filter(item => item.Tipo_de_Consulta == "Painel de Multas" && item.origemUF == uf && item.ativo == true);
         const productRequests = products.map(async item => {
             const requestBody = { ambito: item.ambito, parametros: parameters, produtos: parameters.produtos };
             const response = await callAPIIndividual(requestBody, parent, supplierList, requestFlow);
