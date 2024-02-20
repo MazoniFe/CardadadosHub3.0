@@ -5,11 +5,13 @@ const { isXMLData } = require("./XmlUtils");
 
 const getRequestFlow = (reqBody) => {
   if (
+    reqBody.tipo != null && reqBody.tipo != undefined &&
     reqBody.tipo.toLowerCase().trim() == "orquest" &&
     ["agregados", "estadual", "nacional"].includes(reqBody.ambito)
   ) {
     return "orquest";
   } else if (
+    reqBody.tipo != null && reqBody.tipo != undefined &&
     reqBody.tipo.toLowerCase().trim()  == "painelmultas" &&
     ["agregados", "estadual", "nacional"].includes(reqBody.ambito)
   ) {
