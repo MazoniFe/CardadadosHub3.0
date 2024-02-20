@@ -22,12 +22,13 @@ class OrquestResponse {
     }
 
     bindLogsError(products, parentLogsError) {
-        if(parentLogsError.results.length > 0) this.logsError.push(parentLogsError);
         for (const key in products) {
             if (Object.prototype.hasOwnProperty.call(products, key)) {
                 const item = products[key];
-                if(item.logsError.results.length > 0)
-                this.logsError.push(item.logsError);
+                if(item.logsError && item.logsError.results.length > 0) {
+                    this.logsError.push(item.logsError);
+                }
+
             }
         }
     }

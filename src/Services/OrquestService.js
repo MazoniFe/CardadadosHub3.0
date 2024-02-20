@@ -1,4 +1,8 @@
+const { LogsError, Logs } = require("../Entities/Logs");
+const { buildURL } = require("../Utils/HttpUtils");
+const { findPropertyInJSON } = require("../Utils/JsonUtils");
 const { callAPIIndividual } = require("./IndividualService");
+const { getFailedResponse } = require("./SupplierService");
 
 const callAPIOrquest = async (body, parent ,supplierList, requestFlow) => {
     try{
@@ -14,35 +18,50 @@ const processProductList = async (body, parent, supplierList, requestFlow) => {
         const parameters = body.parametros;
         const products = Object.entries(body.produtos).filter(([key, value]) => key !== body.ambito);
 
-        const productRequests = products.map(([productScope, productData]) => {
+        const productRequests = products.map(async ([productScope, productData]) => {
             const requestBody = { ambito: productScope, parametros: parameters, produtos: productData };
-            return callAPIIndividual(requestBody, parent, supplierList, requestFlow);
+            let response = {};
+            const uf = parameters.uf.toLowerCase() || findPropertyInJSON(parent, "uf").toLowerCase();
+            const scope = productScope.toLowerCase() == "detran" ? productScope.toLowerCase() + uf : productScope.toLowerCase();
+
+            if (parent.logs.status.toUpperCase() == "SUCESSO") {
+                response = await callAPIIndividual(requestBody, parent, supplierList, requestFlow);
+            } else {
+                const productListFiltered = supplierList.filter(item => item.ambito == scope && item.ativo == true);
+                
+                // Se houver itens na lista filtrada, crie uma resposta com falha
+                if (productListFiltered.length > 0) {
+                    const item = productListFiltered[0];
+                    const data = getFailedResponse(item);
+                    const url = buildURL(item, parameters, null);
+                    const message = `A consulta ${parent.logs.scope} falhou, portanto os demais produtos não podem ser chamados.`;
+                
+                    // Criar instância de Logs
+                    const logs = new Logs(url, data, item, 0, message);
+                    
+                    // Criar instância de LogsError
+                    const logsError = new LogsError(item.ambito);
+                    logsError.addLog(logs);
+                
+                    // Atribuir os objetos às chaves correspondentes em response
+                    response['response'] = data;
+                    response['logs'] = logs; // Use logs como valor para a chave 'logs'
+                    response['logsError'] = logsError; // Use logsError como valor para a chave 'logsError'
+                }
+            }
+            return { [scope]: response }; // Retorna um objeto com o productScope como chave e a resposta como valor
         });
-        
 
-        const promiseResults = await Promise.allSettled(productRequests);
+        const results = await Promise.all(productRequests);
 
-        // Criar um objeto para armazenar os resultados
-        const resultObject = {};
-
-        // Iterar sobre os resultados das promessas
-        promiseResults.forEach((result, index) => {
-            // Obtendo o escopo do produto
-            let productScope = products[index][0];
-
-            // Condição para modificar o escopo do produto, se necessário
-            productScope = productScope.toLowerCase() === "detran" ? productScope + parameters.uf : productScope;
-
-            const productData = { response: result.value.data, logs: result.value.logs, logsError: result.value.logsError };
-            // Adicionar os dados ao objeto de resultados usando o escopo do produto como chave
-            resultObject[productScope.toLocaleLowerCase()] = productData;
-        });
-
+        // Combinar todos os resultados em um único objeto
+        const resultObject = Object.assign({}, ...results);
 
         return resultObject;
     } catch (e) {
         console.error(e);
     }
 }
+
 
 module.exports = {callAPIOrquest, processProductList};

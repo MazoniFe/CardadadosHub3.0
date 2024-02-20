@@ -46,7 +46,6 @@ const filterSupplierListByScopeAndRequestFlow = (scope, parameter ,products, req
 const getFailedResponse = (fornecedor) => {
     const response = editAllJsonProperties(fornecedor.retorno_padrao, "Indisponível");
     return response;
-
 }
 
 

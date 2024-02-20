@@ -33,7 +33,7 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
             if (requestSuccess) continue;
             url = buildURL(supplier, parameter, parent);
             currentDate = Date.now();
-            response = await callAPIWithTimeout(url, supplier, supplier.timeoutMilliseconds || 25000);
+            response = await callAPIWithTimeout(url, supplier, supplier.timeout || 25000);
             logs = new Logs(url, response, supplier, currentDate, null)
             if (logs.status.toUpperCase() == "SUCESSO") {
                 requestSuccess = true;
@@ -54,7 +54,7 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
         logsError.addLog(logs);
 
         currentDate = Date.now();
-        return { data: failedResponse, logs, logsError };
+        return { response: failedResponse, logs, logsError };
     }
 }
 

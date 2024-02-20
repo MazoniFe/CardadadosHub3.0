@@ -1,12 +1,15 @@
+const { Logs, LogsError } = require("../Entities/Logs");
+const { buildURL } = require("../Utils/HttpUtils");
 const { findPropertyInJSON } = require("../Utils/JsonUtils");
 const { callAPIIndividual } = require("./IndividualService");
+const { getFailedResponse } = require("./SupplierService");
 
 let infractions = [];
 
 const callFinesPanel = async (body, parent, supplierList, requestFlow) => {
     try {
         let finesPanelresponse = await processFinesPanel(body, parent, supplierList, requestFlow);
-        return {data: finesPanelresponse, correctedInfractions : infractions};
+        return {response: finesPanelresponse, correctedInfractions : infractions};
     } catch (e) {
         console.error(e);
     }
@@ -23,10 +26,23 @@ const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
         const products = supplierList.filter(item => item.Tipo_de_Consulta == "Painel de Multas" && item.origemUF == uf && item.ativo == true);
         const productRequests = products.map(async item => {
             const requestBody = { ambito: item.ambito, parametros: parameters, produtos: parameters.produtos };
-            const response = await callAPIIndividual(requestBody, parent, supplierList, requestFlow);
+            let response = {};
+
+            if(parent.logs.status.toUpperCase() == "SUCESSO") {
+                response = await callAPIIndividual(requestBody, parent, supplierList, requestFlow);
+            } else {
+                const data = getFailedResponse(item);
+                const url = buildURL(item, parameters, null);
+                const message = `A consulta (${parent.logs.scope} falhou, portanto os demais produtos não podem ser chamados.`;
+                const logs = new Logs(url, data, item, 0, message);
+                const logsError = new LogsError(item.ambito);
+                logsError.addLog(logs);
+                response['response'] = data;
+                response['logs'] = logs;
+                response['logsError'] =  logsError;
+            }
             return { content: response, supplier: item };
-        });
-        
+        }); 
 
         const promiseResults = await Promise.allSettled(productRequests);
 
