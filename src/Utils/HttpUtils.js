@@ -120,7 +120,6 @@ const isRequestFailed = (supplier, apiResponse) => {
 
   // Divide a string de condição em partes separadas por operadores lógicos
   const conditions = erroConter.split(/&&|\|\|/);
-  console.log(conditions);
 
   // Avalia cada condição individualmente
   const results = conditions.map(condition => {
