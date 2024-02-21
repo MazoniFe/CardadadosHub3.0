@@ -115,8 +115,7 @@ const responseIsValid = (response, api) => {
 };
 
 const isRequestFailed = (supplier, apiResponse) => {
-  const operator = getSupplierOperator(supplier);
-  const erroConter = supplier.erro_conter.replace(" ", "");
+  const erroConter = (supplier.erro_conter || "").replace(" ", ""); // Certifique-se de lidar com a possibilidade de erro_conter ser nulo ou indefinido
 
   // Divide a string de condição em partes separadas por operadores lógicos
   const conditions = erroConter.split(/&&|\|\|/);
@@ -124,18 +123,24 @@ const isRequestFailed = (supplier, apiResponse) => {
   // Avalia cada condição individualmente
   const results = conditions.map(condition => {
     // Divide cada condição em propriedade e operador
-    const [property, op, value] = condition.match(/([^=!<>]+)([=!<>]+)([^=!<>]+)/).slice(1);
+    const matchResult = condition.match(/([^=!<>]+)([=!<>]+)([^=!<>]+)/);
+    if (matchResult) {
+      const [property, op, value] = matchResult.slice(1);
 
-    // Avalia a condição
-    const propertyValue = findPropertyInJSON(apiResponse, property.trim());
-    switch (op.trim()) {
-      case '=': return propertyValue == value;
-      case '!=': return propertyValue != value;
-      case '<': return propertyValue < value;
-      case '>': return propertyValue > value;
-      case '<=': return propertyValue <= value;
-      case '>=': return propertyValue >= value;
-      default: throw new Error(`Operador "${op}" não suportado.`);
+      // Avalia a condição
+      const propertyValue = findPropertyInJSON(apiResponse, property.trim());
+      switch (op.trim()) {
+        case '=': return propertyValue == value;
+        case '!=': return propertyValue != value;
+        case '<': return propertyValue < value;
+        case '>': return propertyValue > value;
+        case '<=': return propertyValue <= value;
+        case '>=': return propertyValue >= value;
+        default: throw new Error(`Operador "${op}" não suportado.`);
+      }
+    } else {
+      // Se não houver correspondência, considere a condição como falsa
+      return false;
     }
   });
 

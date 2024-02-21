@@ -1,6 +1,7 @@
 const {HttpRequest} = require("../Client/HttpRequest");
 const { buildHeadersAndData, responseIsValid, buildAPIResponse } = require("../Utils/HttpUtils");
 const { extractDataFromXML, isXMLResponse, isXMLData } = require("../Utils/XmlUtils");
+const { getFailedResponse } = require("./SupplierService");
 
 const callAPIWithTimeout = (url, supplier, timeoutMilliseconds) => {
     const apiPromise = callAPI(url, supplier);
@@ -47,12 +48,13 @@ const callAPI = async (urlData, supplier) => {
                 // Criando resposta da API
                 resultData = responseAPI.res.data;
             }
-
+            
             return resultData;
         } 
     
     catch (error) {
-        console.error(error);
+        resultData = getFailedResponse(supplier);
+        return resultData;
     }
 };
 

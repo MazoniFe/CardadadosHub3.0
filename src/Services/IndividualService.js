@@ -27,7 +27,7 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
             url = buildURL(supplier, parameter, parent);
             currentDate = Date.now();
             response = await callAPIWithTimeout(url, supplier, supplier.timeout || 12000);
-            logs = new Logs(url, response, supplier, currentDate, null)
+            logs = new Logs(url, response, supplier, currentDate, null);
 
             if (logs.status.toUpperCase() == "SUCESSO") {
                 requestSuccess = true;
@@ -40,6 +40,7 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
         }
         return { response:response, logs, logsError };
     } catch (e) {
+        console.error(e);
         const failedResponse = getFailedResponse(e.data);
 
         url = buildURL(e.data, parameter, parent);
