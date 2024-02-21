@@ -25,6 +25,8 @@ const buildAPIResponse = async (apiResponse, outputFormat) => {
   let returnValue = null;
   let mappedResult = apiResponse;
 
+  console.log(mappedResult);
+
   if (isXMLData(mappedResult))
     mappedResult = await convertXMLToJson(mappedResult);
 
@@ -32,6 +34,7 @@ const buildAPIResponse = async (apiResponse, outputFormat) => {
     ? mapJSONWithTextPropRecursive(mappedResult).NewDataSet
     : mapJSONWithTextPropRecursive(mappedResult);
   mappedResult = fixSingleDepthArrays(mappedResult);
+
 
   try {
     switch (outputFormat) {
@@ -114,10 +117,10 @@ const responseIsValid = (response, api) => {
   return true;
 };
 
-const isRequestFailed = (supplier, apiResponse) => {
-  const erroConter = (supplier.erro_conter || "").replace(" ", ""); // Certifique-se de lidar com a possibilidade de erro_conter ser nulo ou indefinido
+const isRequestFailed = (supplier, apiResponse) => { // Certifique-se de lidar com a possibilidade de erro_conter ser nulo ou indefinido
 
-  // Divide a string de condição em partes separadas por operadores lógicos
+  const erroConter = supplier.erro_conter;
+
   const conditions = erroConter.split(/&&|\|\|/);
 
   // Avalia cada condição individualmente
@@ -126,7 +129,6 @@ const isRequestFailed = (supplier, apiResponse) => {
     const matchResult = condition.match(/([^=!<>]+)([=!<>]+)([^=!<>]+)/);
     if (matchResult) {
       const [property, op, value] = matchResult.slice(1);
-
       // Avalia a condição
       const propertyValue = findPropertyInJSON(apiResponse, property.trim());
       switch (op.trim()) {

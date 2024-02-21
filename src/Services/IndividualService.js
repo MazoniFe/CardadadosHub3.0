@@ -21,9 +21,11 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
     let logsError = new LogsError(scope);
     let logs;
     let currentDate;
+    let currentSupplier;
     try {
         for (let supplier of supplierList) {
             if (requestSuccess) continue;
+            currentSupplier = supplier;
             url = buildURL(supplier, parameter, parent);
             currentDate = Date.now();
             response = await callAPIWithTimeout(url, supplier, supplier.timeout || 12000);
@@ -40,14 +42,12 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
         }
         return { response:response, logs, logsError };
     } catch (e) {
-        console.error(e);
-        const failedResponse = getFailedResponse(e.data);
-
-        url = buildURL(e.data, parameter, parent);
-        logs = new Logs(url, response, e.data, currentDate, e.error);
+        const failedResponse = getFailedResponse(currentSupplier);
+        const url = buildURL(currentSupplier, parameter, parent);
+        if(e.data != null && e.data != undefined) logs = new Logs(url, response, currentSupplier, currentDate, e.error);
+        else logs = new Logs(url, response, currentSupplier, currentDate, e);
         logs.setStatus("FALHA");
         logsError.addLog(logs);
-
         currentDate = Date.now();
         return { response: failedResponse, logs, logsError };
     }

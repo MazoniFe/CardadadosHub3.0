@@ -13,14 +13,14 @@ class Logs {
         this.codigoConsulta = supplier.id || 'Não informado!';
         this.logErroConsulta = supplier.erro_conter || 'Não informado!';
         this.parametro = supplier.tipos[0] || "Não informado!";
-        
+
         this.dataHora = getFormattedDateTime();
-        this.metodo = response ? response.tipo_requisicao : 'Não informado!';
+        this.metodo = supplier && supplier.tipo_requisicao ? supplier.tipo_requisicao : 'Não informado!';
         this.statusCode = response && response.status ? response.status : "Não informado!";
         this.tempoExecucao = executionTime + "ms";
         this.ordem = supplier.ordem || 'Não informado!';
         this.sucesso_conter = supplier.sucesso_conter || 'Não informado!';
-        
+
         this.status = !isRequestFailed(supplier, response) ? "SUCESSO" : "FALHA";
         this.mensagem = message;
     }

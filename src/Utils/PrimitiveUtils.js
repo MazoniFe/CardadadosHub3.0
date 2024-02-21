@@ -25,7 +25,7 @@ const fixSingleDepthArrays = (object) => {
 
 
 const getErrorMessageResponse = (response) => {
-    return findPropertyInJSON(response, "Mensagem") || findPropertyInJSON(response, "code_message") || findPropertyInJSON(response, "MSG_ERRO") || findPropertyInJSON(response, "Resposta") || findPropertyInJSON(response, "MensagemRetorno") || "Nao informado!";
+    return findPropertyInJSON(response, "Mensagem") || findPropertyInJSON(response, "code_message") || findPropertyInJSON(response, "MSG_ERRO") || findPropertyInJSON(response, "MensagemRetorno") || "Não informado!";
 }
 
 const compareOrder = (a, b) => {

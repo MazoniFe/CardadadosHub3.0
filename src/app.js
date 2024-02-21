@@ -13,7 +13,6 @@ router.post('/buscar', async function(req, res) {
     const databaseResponse = await httpRequest.request({ method: 'GET', url: `https://x8ki-letl-twmt.n7.xano.io/api:VV3TxZZv/cadastro_api` });
     const requestFlow = getRequestFlow(req.body);
     let response;
-
     if(requestFlow == 'individual') {
         const apiRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);  
         response = new IndividualResponse(apiRequest.response, apiRequest.logs, apiRequest.logsError);
@@ -27,9 +26,6 @@ router.post('/buscar', async function(req, res) {
         const finelPanelRequest = await callFinesPanel(req.body, parentRequest, databaseResponse.data, requestFlow);
         response = new FinesPanelResponse(parentRequest.response, parentRequest.logs, finelPanelRequest.response, parentRequest.logsError, finelPanelRequest.correctedInfractions);
     }
-
-
-    
     res.status(200).send(response);
 });
 
