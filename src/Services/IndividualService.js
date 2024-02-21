@@ -8,7 +8,7 @@ const { filterSupplierListByScopeAndRequestFlow, mappingSupplierResponse, getFai
 const callAPIIndividual = async (body, parent, supplierList, requestFlow) => {
     try {
         let scope = body.ambito.toLowerCase();
-        const filteredList = filterSupplierListByScopeAndRequestFlow(scope, body.parametros, body.produtos, requestFlow, supplierList);
+        const filteredList = filterSupplierListByScopeAndRequestFlow(scope, body.parametros, body.produtos, requestFlow, supplierList, parent);
         return await processSupplier(filteredList, scope, body.parametros, parent);
     } catch (e) {
         console.error(e);
@@ -40,7 +40,6 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
         }
         return { response:response, logs, logsError };
     } catch (e) {
-        console.error(e);
         const failedResponse = getFailedResponse(e.data);
 
         url = buildURL(e.data, parameter, parent);

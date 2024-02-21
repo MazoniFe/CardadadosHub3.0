@@ -1,3 +1,4 @@
+const { getSupplierUf } = require("../Utils/HttpUtils");
 const {findPropertyInJSON, fillEmptyArraysWithObject, editAllJsonProperties, applyTrimToJSONStrings } = require("../Utils/JsonUtils");
 const { compareOrder } = require("../Utils/PrimitiveUtils");
 
@@ -24,21 +25,20 @@ const mappingSupplierResponse = (supplier, response, logs) => {
     }
 }
 
-const filterSupplierListByScopeAndRequestFlow = (scope, parameter ,products, requestFlow, supplierList) => {
+const filterSupplierListByScopeAndRequestFlow = (scope, parameter, products, requestFlow, supplierList, parent) => {
 
     let filteredList = supplierList;
+    const uf = getSupplierUf(parameter.uf, parent);
 
     if (products && products[scope] && products[scope].length > 0) {
         filteredList = filteredList.filter(item => products[scope].includes(item.id));
     }
     if(requestFlow == "painelmultas"){
-        filteredList = filteredList.filter(item => item.Tipo_de_Consulta === 'Painel de Multas' && item.origemUF === parameter.uf && item.ativo === true);
+        filteredList = filteredList.filter(item => item.Tipo_de_Consulta === 'Painel de Multas' && item.origemUF.toLowerCase() == uf && item.ativo === true);
     } else {
-        filteredList = scope.toLowerCase() == "detran" 
-        ? 
-        filteredList.filter(item => item.ambito == scope && item.ativo == true && item.origemUF.toLowerCase() == parameter.uf.toLowerCase())
-        : 
-        filteredList.filter(item => item.ambito == scope && item.ativo == true);
+        filteredList = scope.toLowerCase() === "detran" 
+        ? filteredList.filter(item => item.ambito === scope && item.ativo === true && item.origemUF.toLowerCase() == uf.toLowerCase())
+        : filteredList.filter(item => item.ambito === scope && item.ativo === true);
     }
 
     filteredList.sort(compareOrder);

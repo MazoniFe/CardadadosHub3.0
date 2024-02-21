@@ -153,7 +153,6 @@ const isRequestFailed = (supplier, apiResponse) => {
   return result;
 };
 
-
 const getSupplierOperator = (supplier) => {
   if (supplier.erro_conter.includes("!=")) {
     return "!=";
@@ -173,11 +172,16 @@ const operatorComparer = (var1, var2, sinal) => {
   }
 };
 
+const getSupplierUf = (uf, parent) => {
+  return (uf?.if != null && uf !== undefined) ? uf?.toLowerCase() : findPropertyInJSON(parent, "uf")?.toLowerCase();
+}
+
 module.exports = {
   getRequestFlow,
   buildAPIResponse,
   buildURL,
   buildHeadersAndData,
   responseIsValid,
-  isRequestFailed
+  isRequestFailed,
+  getSupplierUf
 };

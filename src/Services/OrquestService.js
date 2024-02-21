@@ -1,5 +1,5 @@
 const { LogsError, Logs } = require("../Entities/Logs");
-const { buildURL } = require("../Utils/HttpUtils");
+const { buildURL, getSupplierUf } = require("../Utils/HttpUtils");
 const { findPropertyInJSON } = require("../Utils/JsonUtils");
 const { callAPIIndividual } = require("./IndividualService");
 const { getFailedResponse } = require("./SupplierService");
@@ -21,7 +21,9 @@ const processProductList = async (body, parent, supplierList, requestFlow) => {
         const productRequests = products.map(async ([productScope, productData]) => {
             const requestBody = { ambito: productScope, parametros: parameters, produtos: productData };
             let response = {};
-            const uf = parameters.uf.toLowerCase() || findPropertyInJSON(parent, "uf").toLowerCase();
+
+            const uf = getSupplierUf(parameters.uf, parent);
+            
             const scope = productScope.toLowerCase() == "detran" ? productScope.toLowerCase() + uf : productScope.toLowerCase();
 
             if (parent.logs.status.toUpperCase() == "SUCESSO") {
