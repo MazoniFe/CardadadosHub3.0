@@ -173,7 +173,8 @@ const operatorComparer = (var1, var2, sinal) => {
 };
 
 const getSupplierUf = (uf, parent) => {
-  return (uf?.if != null && uf !== undefined) ? uf?.toLowerCase() : findPropertyInJSON(parent, "uf")?.toLowerCase();
+  if(uf != null && uf != undefined) return uf.toLowerCase();
+  else return findPropertyInJSON(parent, "uf")?.toLowerCase();
 }
 
 module.exports = {
