@@ -17,15 +17,13 @@ const callAPIIndividual = async (body, parent, supplierList, requestFlow) => {
 
 const processSupplier = async (supplierList, scope, parameter, parent) => {
     let requestSuccess = false;
-    let response
+    let response;
     let logsError = new LogsError(scope);
     let logs;
     let currentDate;
-    let currentSupplier;
-    try {
-        for (let supplier of supplierList) {
+    for (let supplier of supplierList) {
+        try {
             if (requestSuccess) continue;
-            currentSupplier = supplier;
             url = buildURL(supplier, parameter, parent);
             currentDate = Date.now();
             response = await callAPIWithTimeout(url, supplier, supplier.timeout || 12000);
@@ -39,18 +37,18 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
                 logsError.addLog(logs);
             }
             response = mappingSupplierResponse(supplier, response, logs);
+        } catch (e) {
+            response = getFailedResponse(e.data);
+            url = buildURL(e.data, parameter, parent);
+            logs = new Logs(url, response, e.data, currentDate, e.error);
+            logs.setStatus("FALHA");
+            logsError.addLog(logs);
+            continue;
         }
-        return { response:response, logs, logsError };
-    } catch (e) {
-        const failedResponse = getFailedResponse(currentSupplier);
-        const url = buildURL(currentSupplier, parameter, parent);
-        if(e.data != null && e.data != undefined) logs = new Logs(url, response, currentSupplier, currentDate, e.error);
-        else logs = new Logs(url, response, currentSupplier, currentDate, e);
-        logs.setStatus("FALHA");
-        logsError.addLog(logs);
-        currentDate = Date.now();
-        return { response: failedResponse, logs, logsError };
     }
+
+    // Retorna os resultados após iterar sobre todos os fornecedores
+    return { response, logs, logsError };
 }
 
 module.exports = { callAPIIndividual };

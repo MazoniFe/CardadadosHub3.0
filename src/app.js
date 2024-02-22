@@ -4,7 +4,7 @@ const { getRequestFlow } = require('./Utils/HttpUtils');
 const { callAPIIndividual } = require('./Services/IndividualService');
 const { callAPIOrquest } = require('./Services/OrquestService');
 const { callFinesPanel } = require('./Services/FinesPanelService');
-const { FinesPanelResponse, OrquestResponse, IndividualResponse } = require('./Client/HttpResponses');
+const { FinesPanelResponse, CustomResponse, IndividualResponse } = require('./Client/HttpResponses');
 const app = express();
 const router = express.Router();
 
@@ -15,12 +15,11 @@ router.post('/buscar', async function(req, res) {
     let response;
     if(requestFlow == 'individual') {
         const apiRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);  
-        response = new IndividualResponse(apiRequest.response, apiRequest.logs, apiRequest.logsError);
+        response = new CustomResponse(apiRequest.response, apiRequest.logs, null, apiRequest.logsError, requestFlow);
     } else if (requestFlow == 'orquest') {
         const parentRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);
         const orquestRequest = await callAPIOrquest(req.body, parentRequest, databaseResponse.data, requestFlow);
-        response = new OrquestResponse(parentRequest.response, parentRequest.logs, orquestRequest, parentRequest.logsError);
-        response.addProduct(req.body.ambito, parentRequest.response, parentRequest.logs, parentRequest.logsError);
+        response = new CustomResponse(parentRequest.response, parentRequest.logs, orquestRequest, parentRequest.logsError, requestFlow);
     } else if (requestFlow == 'painelMultas'){
         const parentRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);
         const finelPanelRequest = await callFinesPanel(req.body, parentRequest, databaseResponse.data, requestFlow);

@@ -25,8 +25,6 @@ const buildAPIResponse = async (apiResponse, outputFormat) => {
   let returnValue = null;
   let mappedResult = apiResponse;
 
-  console.log(mappedResult);
-
   if (isXMLData(mappedResult))
     mappedResult = await convertXMLToJson(mappedResult);
 

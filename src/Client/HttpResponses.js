@@ -1,24 +1,13 @@
-
-class IndividualResponse {
-    constructor(response, logs, logsError) {
-        this.response = response;
-        this.logs = logs;
-        this.logsError = logsError;
-    }
-}
-
-class OrquestResponse {
-    constructor(response, logs, products, parentLogsError) {
-        this.response = response;
-        this.logs = logs;
-        this.products = products;
-        // Inicializa a propriedade logsError como um objeto vazio
+class CustomResponse {
+    constructor(response, logs, products, parentLogsError, requestFlow) {
+        this.products = products || {};
         this.logsError = [];
 
-        // Vincula os logs de erro de cada item em products à propriedade logsError
-        this.bindLogsError(products, parentLogsError);
-        // Remove a propriedade logsError de cada item em products
-        this.products = this.removeLogsErrorFromProducts(products);
+        this.addProduct(logs.scope, response, logs, parentLogsError);
+        if(requestFlow.toLowerCase() == "orquest"){
+            this.bindLogsError(products, parentLogsError);
+            this.products = this.removeLogsErrorFromProducts(products);
+        } 
     }
 
     bindLogsError(products, parentLogsError) {
@@ -40,9 +29,8 @@ class OrquestResponse {
         if(logsError.results.length > 0) {
             this.logsError.push(logsError);
         }
-
     }
-
+    
     removeLogsErrorFromProducts(products) {
         const result = {};
         for (const key in products) {
@@ -94,4 +82,4 @@ class FinesPanelResponse {
     }
 }
 
-module.exports = { IndividualResponse, OrquestResponse, FinesPanelResponse };
+module.exports = {CustomResponse, FinesPanelResponse };
