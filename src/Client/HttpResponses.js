@@ -4,7 +4,7 @@ class CustomResponse {
         this.logsError = [];
 
         this.addProduct(logs.scope, response, logs, parentLogsError);
-        if(requestFlow.toLowerCase() == "orquest"){
+        if(requestFlow && requestFlow.toLowerCase() == "orquest"){
             this.bindLogsError(products, parentLogsError);
             this.products = this.removeLogsErrorFromProducts(products);
         } 
@@ -14,21 +14,24 @@ class CustomResponse {
         for (const key in products) {
             if (Object.prototype.hasOwnProperty.call(products, key)) {
                 const item = products[key];
-                if(item.logsError && item.logsError.results.length > 0) {
+                if(item.logsError && item.logsError.results && item.logsError.results.length > 0) {
                     this.logsError.push(item.logsError);
                 }
-
             }
         }
     }
+    
 
     addProduct(scope, response, logs,  logsError) {
         const product = {response, logs};
         this.products[scope] = product;
 
-        if(logsError.results.length > 0) {
-            this.logsError.push(logsError);
+        if(logsError && logsError.results) {
+            if(logsError.results.length > 0) {
+                this.logsError.push(logsError);
+            }
         }
+
     }
     
     removeLogsErrorFromProducts(products) {
@@ -82,4 +85,11 @@ class FinesPanelResponse {
     }
 }
 
-module.exports = {CustomResponse, FinesPanelResponse };
+class FailedResponse {
+    constructor(message) {
+        this.foundError = true;
+        this.message = message;
+    }
+}
+
+module.exports = {CustomResponse, FinesPanelResponse, FailedResponse };

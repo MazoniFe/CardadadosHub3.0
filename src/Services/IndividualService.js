@@ -7,7 +7,7 @@ const { filterSupplierListByScopeAndRequestFlow, mappingSupplierResponse, getFai
 
 const callAPIIndividual = async (body, parent, supplierList, requestFlow) => {
     try {
-        let scope = body.ambito.toLowerCase();
+        let scope = body.scope.toLowerCase();
         const filteredList = filterSupplierListByScopeAndRequestFlow(scope, body.parametros, body.produtos, requestFlow, supplierList, parent);
         return await processSupplier(filteredList, scope, body.parametros, parent);
     } catch (e) {
