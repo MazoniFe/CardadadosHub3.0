@@ -11,26 +11,46 @@ const mappingSupplierResponse = (supplier, response, logs) => {
                 const propertyValue = findPropertyInJSON(targetResponse, key);
                 const isObject = typeof (propertyValue);
                 if (isObject == "object") {
-                    const newListResponse = [];
-                    const typeField = propertyValue.tipoCampo.toUpperCase();
+                    let newListResponse = [];
                     const standardList = propertyValue.retornoPadrao;
-                    const listPropertyValue = findPropertyInJSON(response, propertyValue.campoNome);
-                    listPropertyValue.forEach(element => {
-                        let newList = {};
-                        Object.keys(standardList).forEach(key => {
-                            const value = standardList[key];
-                            const filteredValue = findPropertyInJSON(element, value);
-                            newList = { ...newList, [key]: filteredValue };
+                    const listPropertyValue = findPropertyInJSON(response, propertyValue.campoNome) || null;
+
+                    if (listPropertyValue == null) {
+                        if(isObjectOrArray(propertyValue) && propertyValue.retornoPadrao){
+                            newListResponse.push(getFailedStandardList(propertyValue.retornoPadrao));
+                        } else {
+                            newListResponse = getFailedStandardList(propertyValue.retornoPadrao);
+                        }
+                    }
+
+                    if (listPropertyValue && listPropertyValue != null && typeof (listPropertyValue) == Array) {
+                        listPropertyValue.forEach(element => {
+                            let newList = {};
+                            Object.keys(standardList).forEach(key => {
+                                const value = standardList[key];
+                                const filteredValue = findPropertyInJSON(element, value);
+                                newList = { ...newList, [key]: filteredValue };
+                            });
+                            newListResponse.push(newList);
                         });
-                        newListResponse.push(newList);
-                    });
+                    } else if (listPropertyValue && listPropertyValue != null && typeof (listPropertyValue) == "object") {
+                        Object.keys(listPropertyValue).forEach(element => {
+                            let newList = {};
+                            Object.keys(standardList).forEach(key => {
+                                const value = standardList[key];
+                                const filteredValue = findPropertyInJSON(listPropertyValue[element], value) || "Não informado!";
+                                newList = { ...newList, [key]: filteredValue };
+                            });
+                            newListResponse.push(newList);
+                        });
+                    }
+                    
                     targetResponse[key] = newListResponse;
                 } else {
                     targetResponse[key] = findPropertyInJSON(response, propertyValue) || "Não informado!";
                 }
 
             }
-
             targetResponse = fillEmptyArraysWithObject(targetResponse);
             targetResponse = applyTrimToJSONStrings(targetResponse);
             return targetResponse;
@@ -61,6 +81,30 @@ const filterSupplierListByScopeAndRequestFlow = (scope, parameter, products, req
 
     filteredList.sort(compareOrder);
     return filteredList;
+}
+
+const isObjectOrArray = (obj) => {
+    return typeof(obj) == "object" || typeof(obj) == Array;
+}
+
+const getFailedStandardList = (json) => {
+    let response = {};
+
+    console.log(json);
+
+    if (typeof (json) == "object") {
+        Object.keys(json).forEach(item => {
+            response = { ...response, [item]: "Não informado!" };
+        })
+    } else if (typeof (json) == Array) {
+        json.forEach(item => {
+            response = { ...response, [item]: "Não informado!" };
+        })
+    }
+    else {
+        response = "Não informado!";
+    }
+    return response;
 }
 
 const getFailedResponse = (supplier) => {
