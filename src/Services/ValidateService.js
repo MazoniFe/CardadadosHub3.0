@@ -25,6 +25,17 @@ const checkParameters = (body, databaseSuppliers) => {
         if (body.produtos == null || body.produtos == undefined) {
             missingField.push(`Quando o tipo de consulta for orquest, os produtos devem ser enviados!`);
         }
+
+
+        if(body.produtos) {
+            const missingProductsInDatabase = [];
+            Object.entries(body.produtos).forEach(([key, value]) => {
+                if (!existsSupplierInDatabase(key, databaseSuppliers)){          
+                    missingProductsInDatabase.push(key);
+                }
+            });
+            if(missingProductsInDatabase.length > 0) missingField.push({message: "Erro encontrar produto(s) no banco de dados", missingProducts: missingProductsInDatabase});
+        }
     }
 
     if(!body.parametros) {
