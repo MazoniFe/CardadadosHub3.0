@@ -24,7 +24,7 @@ const processProductList = async (body, parent, supplierList, requestFlow) => {
 
             const uf = getSupplierUf(parameters.uf, parent);
             
-            const scope = productScope.toLowerCase() == "detran" ? productScope.toLowerCase() + uf : productScope.toLowerCase();
+            const scope = productScope.toLowerCase();
 
             if (parent.logs.status.toUpperCase() == "SUCESSO") {
                 response = await callAPIIndividual(requestBody, parent, supplierList, requestFlow);
