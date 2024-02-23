@@ -19,7 +19,7 @@ const processProductList = async (body, parent, supplierList, requestFlow) => {
         const products = Object.entries(body.produtos).filter(([key, value]) => key !== body.ambito);
 
         const productRequests = products.map(async ([productScope, productData]) => {
-            const requestBody = { ambito: productScope, parametros: parameters, produtos: productData };
+            const requestBody = { scope: productScope, parametros: parameters, produtos: productData };
             let response = {};
 
             const uf = getSupplierUf(parameters.uf, parent);

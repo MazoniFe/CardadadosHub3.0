@@ -5,15 +5,14 @@ const { isXMLData } = require("./XmlUtils");
 
 const getRequestFlow = (reqBody) => {
   if (
-    reqBody.tipo != null && reqBody.tipo != undefined &&
-    reqBody.tipo.toLowerCase().trim() == "orquest" &&
-    ["agregados", "estadual", "nacional"].includes(reqBody.ambito)
+    reqBody.tipo && reqBody.tipo.toLowerCase().trim() == "orquest" &&
+    ["agregados", "estadual", "nacional"].includes(reqBody.scope)
   ) {
     return "orquest";
   } else if (
     reqBody.tipo != null && reqBody.tipo != undefined &&
     reqBody.tipo.toLowerCase().trim() == "painelmultas" &&
-    ["agregados", "estadual", "nacional"].includes(reqBody.ambito)
+    ["agregados", "estadual", "nacional"].includes(reqBody.scope)
   ) {
     return "painelMultas";
   } else {
@@ -178,7 +177,7 @@ const operatorComparer = (var1, var2, sinal) => {
 };
 
 const getSupplierUf = (uf, parent) => {
-  if(uf != null && uf != undefined) return uf.toLowerCase();
+  if (uf != null && uf != undefined) return uf.toLowerCase();
   else return findPropertyInJSON(parent, "uf")?.toLowerCase();
 }
 
