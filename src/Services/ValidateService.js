@@ -21,11 +21,14 @@ const checkParameters = (body, databaseSuppliers) => {
         }
     }
 
-    if (body.tipo.toLowerCase() == "orquest") {
+    if (body.tipo && body.tipo.toLowerCase() == "orquest") {
         if (body.produtos == null || body.produtos == undefined) {
             missingField.push(`Quando o tipo de consulta for orquest, os produtos devem ser enviados!`);
         }
+    }
 
+    if(!body.parametros) {
+        missingField.push("Os parametros não foram enviados");
     }
 
     if (missingField.length != 0) {
