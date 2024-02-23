@@ -15,7 +15,7 @@ const checkParameters = (body, databaseSuppliers) => {
         missingField.push(`Tipo de consulta inválido!`);
     }
 
-    if (!body.scope) {
+    if (body.scope) {
         if (!existsSupplierInDatabase(body.scope, databaseSuppliers)) {
             missingField.push(`O fornecedor ${body.scope} não foi encontrado no banco de dados! `);
         }

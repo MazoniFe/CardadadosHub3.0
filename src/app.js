@@ -15,7 +15,7 @@ router.post('/buscar', async function(req, res) {
     const requestFlow = getRequestFlow(req.body);
     let response;
     
-    const validateBody = checkParameters(req.body, requestFlow, databaseResponse.data);
+    const validateBody = checkParameters(req.body, databaseResponse.data)
 
     if(!validateBody.foundError) {
         if(requestFlow == 'individual') {
