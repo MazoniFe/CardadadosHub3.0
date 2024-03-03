@@ -8,9 +8,11 @@ const mappingSupplierResponse = (supplier, response, logs) => {
 
             let targetResponse = supplier.retorno_padrao;
             for (const key in targetResponse) {
-                const propertyValue = findPropertyInJSON(targetResponse, key);
+                const propertyValue = findPropertyInJSON(targetResponse, key) || key;
+
+
                 const isObject = typeof (propertyValue);
-                if (isObject == "object") {
+                if (propertyValue != null && isObject == "object") {
                     let newListResponse = [];
                     const standardList = propertyValue.retornoPadrao;
                     const listPropertyValue = findPropertyInJSON(response, propertyValue.campoNome) || null;
@@ -89,9 +91,7 @@ const isObjectOrArray = (obj) => {
 
 const getFailedStandardList = (json) => {
     let response = {};
-
-    console.log(json);
-
+    
     if (typeof (json) == "object") {
         Object.keys(json).forEach(item => {
             response = { ...response, [item]: "Não informado!" };
