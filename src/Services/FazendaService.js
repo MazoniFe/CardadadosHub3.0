@@ -6,7 +6,7 @@ const { getFailedResponse } = require("./SupplierService");
 
 let infractions = [];
 
-const callFinesPanel = async (body, parent, supplierList, requestFlow) => {
+const callFazenda = async (body, parent, supplierList, requestFlow) => {
     try {
         let finesPanelresponse = await processFinesPanel(body, parent, supplierList, requestFlow);
         return {response: finesPanelresponse, correctedInfractions : infractions};
@@ -15,18 +15,19 @@ const callFinesPanel = async (body, parent, supplierList, requestFlow) => {
     }
 }
 
-const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
+const processFazenda = async (body, parent, supplierList, requestFlow) => {
     try {
         const parameters = body.parametros;
 
+        //const products = Object.entries(body.produtos).filter(([key, value]) => key !== body.ambito);
         let uf = parameters.uf || parameters.UF || findPropertyInJSON(parent, "uf");
         uf = uf.toLowerCase();
 
-        const products = supplierList.filter(item => item.Tipo_de_Consulta == "Painel de Multas" && item.origemUF == uf && item.ativo == true);
+        const products = supplierList.filter(item => item.Tipo_de_Consulta == "Fazenda" && item.origemUF == uf && item.ativo == true);
         const productRequests = products.map(async item => {
-            const requestBody = { scope: item.ambito, parametros: parameters, produtos: parameters.produtos };
+            const requestBody = { ambito: item.ambito, parametros: parameters, produtos: parameters.produtos };
             let response = {};
-            
+
             if(parent.logs.status.toUpperCase() == "SUCESSO") {
                 response = await callAPIIndividual(requestBody, parent, supplierList, requestFlow);
             } else {
@@ -67,7 +68,7 @@ const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
 
 const processInfractionCorrections = (response, supplier) => {
     const supplierSource = supplier.fonte;
-    const infractionsField = findPropertyInJSON(response, supplier.infracoes_campo);
+    const infractionsField = findPropertyInJSON(response, supplier.infractions_campo);
     const infra_standard = supplier.retorno_infra_padrao;
 
     if (infractionsField != null && infractionsField != undefined) {
@@ -81,6 +82,7 @@ const processInfractionCorrections = (response, supplier) => {
                     corrected_infractions[key] = findPropertyInJSON(infr, propertyValue) || 'Nao informado';
                 }
             }
+
             const ait = corrected_infractions.ait;
             const formated_ait = ait.replace(/[\s-]/g, '');
             let short_ait;
@@ -131,13 +133,12 @@ const processInfractionCorrections = (response, supplier) => {
             if (infractions.some(item => item.ait === short_ait)) {
                 const existingItem = infractions.find(item => item.ait === short_ait);
 
-                if (formatValue(corrected_infractions.valor) > formatValue(existingItem.valor)) {
+                if (normalizarValor(corrected_infractions.valor) > formatValue(existingItem.valor)) {
                     infractions = infractions.filter(item => item.ait !== short_ait);
                     corrected_infractions['ait'] = short_ait;
                     infractions.push(corrected_infractions);
                 }
-            } 
-            else {
+            } else {
                 corrected_infractions['ait'] = short_ait;
                 infractions.push(corrected_infractions);
             }
@@ -155,4 +156,4 @@ const formatValue = (value) => {
 
 
 
-module.exports = { callFinesPanel, processFinesPanel };
+module.exports = { callFazenda, processFazenda };

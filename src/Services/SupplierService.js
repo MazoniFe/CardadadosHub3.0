@@ -9,15 +9,14 @@ const mappingSupplierResponse = (supplier, response, logs) => {
             let targetResponse = supplier.retorno_padrao;
             for (const key in targetResponse) {
                 const propertyValue = findPropertyInJSON(targetResponse, key) || key;
-
-
+                
                 const isObject = typeof (propertyValue);
                 if (propertyValue != null && isObject == "object") {
                     let newListResponse = [];
                     const standardList = propertyValue.retornoPadrao;
                     const listPropertyValue = findPropertyInJSON(response, propertyValue.campoNome) || null;
 
-                    if (listPropertyValue == null) {
+                    if (listPropertyValue == null ||listPropertyValue.length === 0) {
                         if(isObjectOrArray(propertyValue) && propertyValue.retornoPadrao){
                             newListResponse.push(getFailedStandardList(propertyValue.retornoPadrao));
                         } else {
@@ -30,12 +29,14 @@ const mappingSupplierResponse = (supplier, response, logs) => {
                             let newList = {};
                             Object.keys(standardList).forEach(key => {
                                 const value = standardList[key];
-                                const filteredValue = findPropertyInJSON(element, value);
+                                const filteredValue = findPropertyInJSON(element, value) || "Não informado!";
+                                
                                 newList = { ...newList, [key]: filteredValue };
                             });
                             newListResponse.push(newList);
                         });
-                    } else if (listPropertyValue && listPropertyValue != null && typeof (listPropertyValue) == "object") {
+                    } 
+                    else if (listPropertyValue && listPropertyValue != null && typeof (listPropertyValue) == "object") {
                         Object.keys(listPropertyValue).forEach(element => {
                             let newList = {};
                             Object.keys(standardList).forEach(key => {

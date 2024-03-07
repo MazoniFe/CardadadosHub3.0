@@ -1,6 +1,5 @@
 const { Logs, LogsError } = require("../Entities/Logs");
 const { buildURL } = require("../Utils/HttpUtils");
-const { findPropertyInJSON } = require("../Utils/JsonUtils");
 const { getErrorMessageResponse } = require("../Utils/PrimitiveUtils");
 const { callAPIWithTimeout } = require("./APIService");
 const { filterSupplierListByScopeAndRequestFlow, mappingSupplierResponse, getFailedResponse } = require("./SupplierService");

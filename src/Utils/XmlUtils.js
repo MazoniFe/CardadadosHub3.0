@@ -48,7 +48,6 @@ const extractDataFromXML = async (xml) => {
     }
 };
 
-
 // Função recursiva para extrair valores de texto do objeto XML
 const extractXMLValues = (obj) => {
     try {

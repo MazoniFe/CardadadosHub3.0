@@ -85,6 +85,45 @@ class FinesPanelResponse {
     }
 }
 
+class FazendaResponse {
+    constructor(response, logs, finesPanel, parentLogsError, correctedInfractions) {
+        this.response = response;
+        this.logs = logs;
+        this.painelMultas = finesPanel;
+        this.infracoesCorrigidas = correctedInfractions;
+        this.logsError = [];
+
+        this.bindLogsError(finesPanel, parentLogsError);
+        this.painelMultas = this.removeLogsErrorFromProducts(finesPanel);
+
+    }
+
+    bindLogsError(products, parentLogsError) {
+        if (parentLogsError && parentLogsError.results && parentLogsError.results.length > 0) {
+            this.logsError.push(parentLogsError);
+        }
+        for (const key in products) {
+            if (Object.prototype.hasOwnProperty.call(products, key)) {
+                const item = products[key];
+                if (item.logsError && item.logsError.results && item.logsError.results.length > 0) {
+                    this.logsError.push(item.logsError);
+                }
+            }
+        }
+    }    
+
+    removeLogsErrorFromProducts(products) {
+        const result = {};
+        for (const key in products) {
+            if (Object.prototype.hasOwnProperty.call(products, key)) {
+                const { logsError, ...rest } = products[key];
+                result[key] = rest; // Adiciona o objeto sem a propriedade logsError ao resultado
+            }
+        }
+        return result;
+    }
+}
+
 class FailedResponse {
     constructor(message) {
         this.foundError = true;
@@ -92,4 +131,4 @@ class FailedResponse {
     }
 }
 
-module.exports = {CustomResponse, FinesPanelResponse, FailedResponse };
+module.exports = {CustomResponse, FinesPanelResponse, FailedResponse, FazendaResponse };

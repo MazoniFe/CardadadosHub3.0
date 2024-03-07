@@ -23,7 +23,6 @@ const fixSingleDepthArrays = (object) => {
     return object;
 }
 
-
 const getErrorMessageResponse = (response) => {
     return findPropertyInJSON(response, "Mensagem") || findPropertyInJSON(response, "code_message") || findPropertyInJSON(response, "MSG_ERRO") || findPropertyInJSON(response, "MensagemRetorno") || "Não informado!";
 }
@@ -40,6 +39,5 @@ const compareOrder = (a, b) => {
     }
     return 0;
 }
-
 
 module.exports = {fixSingleDepthArrays , compareOrder, getErrorMessageResponse};

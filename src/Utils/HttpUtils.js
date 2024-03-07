@@ -4,18 +4,16 @@ const js2xmlparser = require("js2xmlparser");
 const { isXMLData } = require("./XmlUtils");
 
 const getRequestFlow = (reqBody) => {
-  if (
-    reqBody.tipo && reqBody.tipo.toLowerCase().trim() == "orquest" &&
-    ["agregados", "estadual", "nacional"].includes(reqBody.scope)
-  ) {
+  if (reqBody.tipo && reqBody.tipo.toLowerCase().trim() == "orquest" && ["agregados", "estadual", "nacional"].includes(reqBody.scope)) {
     return "orquest";
-  } else if (
-    reqBody.tipo != null && reqBody.tipo != undefined &&
-    reqBody.tipo.toLowerCase().trim() == "painelmultas" &&
-    ["agregados", "estadual", "nacional"].includes(reqBody.scope)
-  ) {
+  }
+  else if (reqBody.tipo != null && reqBody.tipo != undefined && reqBody.tipo.toLowerCase().trim() == "painelmultas" && ["agregados", "estadual", "nacional"].includes(reqBody.scope)) {
     return "painelMultas";
-  } else {
+  }
+  else if (reqBody.tipo != null && reqBody.tipo != undefined && reqBody.tipo.toLowerCase().trim() == "fazenda" && ["agregados", "estadual", "nacional"].includes(reqBody.scope)) {
+    return "fazenda";
+  }
+  else {
     return "individual";
   }
 };
