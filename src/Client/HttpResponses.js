@@ -89,9 +89,6 @@ class FazendaResponse {
     constructor(response, logs, fazendaResponse, parentLogsError) {
 
         const buildedLists = this.buildList(fazendaResponse);
-
-        console.log(buildedLists);
-
         this.response = response;
         this.logs = logs;
         this.ipva = buildedLists.ipvaList || [];

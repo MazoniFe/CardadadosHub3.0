@@ -65,12 +65,16 @@ const buildURL = (supplier, parameter, parent) => {
           findPropertyInJSON(parent, "ndocumento") ||
           findPropertyInJSON(parent, "cpf_cnpj") ||
           findPropertyInJSON(parent, "Cpf_Cnpj");
-
           value = value.replace(/[-.()]+/g, "");
-      } else {
+      } 
+      if (type.toLowerCase() == "uf") {
+        const uf = parameter.uf || parameter.UF;
+        value = getSupplierUf(uf, parent)
+      }      
+      else {
         value =
           parent[`${type.toLowerCase()}`] ||
-          parameter[`${type.toLocaleString()}`];
+          parameter[`${type.toLowerCase()}`];
       }
     } else {
       value = parameter[`${type.toLowerCase()}`];
@@ -156,25 +160,6 @@ const isRequestFailed = (supplier, apiResponse) => { // Certifique-se de lidar c
   });
 
   return result;
-};
-
-const getSupplierOperator = (supplier) => {
-  if (supplier.erro_conter.includes("!=")) {
-    return "!=";
-  } else {
-    return "==";
-  }
-};
-
-const operatorComparer = (var1, var2, sinal) => {
-  switch (sinal) {
-    case "!=":
-      return var1 != var2;
-    case "==":
-      return var1 == var2;
-    default:
-      return var1 === var2;
-  }
 };
 
 const getSupplierUf = (uf, parent) => {

@@ -18,18 +18,18 @@ const callFazenda = async (body, parent, supplierList, requestFlow) => {
 const processFazenda = async (body, parent, supplierList, requestFlow) => {
     try {
         const parameters = body.parametros;
-
+        
         let uf = parameters.uf || parameters.UF || findPropertyInJSON(parent, "uf");
         uf = uf.toLowerCase();
+        parameters.uf = uf;
 
-        const products = supplierList.filter(item => Array.isArray(item.Tipo_de_Consulta) && item.Tipo_de_Consulta.length != 0 && item.Tipo_de_Consulta.includes("Fazenda") && (item.origemUF == uf || item.origemUF == "br"));
-        
+        const products = supplierList.filter(item => Array.isArray(item.Tipo_de_Consulta) && item.Tipo_de_Consulta.length != 0 && item.Tipo_de_Consulta.includes("Fazenda") && (item.origemUF === uf || item.origemUF === "br"));
         const productRequests = products.map(async item => {
             const requestBody = { scope: item.ambito, parametros: parameters, produtos: parameters.produtos };
             let response = {};
 
             if(parent.logs.status.toUpperCase() == "SUCESSO") {
-                response = await callAPIIndividual(requestBody, parent, supplierList, requestFlow);
+                response = await callAPIIndividual(requestBody, parent, products, requestFlow);
             } else {
                 const data = getFailedResponse(item);
                 const url = buildURL(item, parameters, null);

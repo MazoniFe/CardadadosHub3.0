@@ -1,6 +1,5 @@
 const { LogsError, Logs } = require("../Entities/Logs");
 const { buildURL, getSupplierUf } = require("../Utils/HttpUtils");
-const { findPropertyInJSON } = require("../Utils/JsonUtils");
 const { callAPIIndividual } = require("./IndividualService");
 const { getFailedResponse } = require("./SupplierService");
 
