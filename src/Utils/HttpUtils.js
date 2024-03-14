@@ -63,7 +63,10 @@ const buildURL = (supplier, parameter, parent) => {
           findPropertyInJSON(parent, "cpf") ||
           findPropertyInJSON(parent, "cnpj") ||
           findPropertyInJSON(parent, "ndocumento") ||
-          findPropertyInJSON(parent, "cpf_cnpj");
+          findPropertyInJSON(parent, "cpf_cnpj") ||
+          findPropertyInJSON(parent, "Cpf_Cnpj");
+
+          value = value.replace(/[-.()]+/g, "");
       } else {
         value =
           parent[`${type.toLowerCase()}`] ||

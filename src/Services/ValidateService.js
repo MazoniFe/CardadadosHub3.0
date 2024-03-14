@@ -11,7 +11,7 @@ const checkParameters = (body, databaseSuppliers) => {
         missingField.push("O tipo de requisicão não foi enviado!");
     }
 
-    if(body.tipo && body.tipo.toLowerCase() != "orquest" && body.tipo.toLowerCase() != "individual" && body.tipo.toLowerCase() != "painelmultas") {
+    if(body.tipo && body.tipo.toLowerCase() != "orquest" && body.tipo.toLowerCase() != "individual" && body.tipo.toLowerCase() != "painelmultas" && body.tipo.toLowerCase() != "fazenda") {
         missingField.push(`Tipo de consulta inválido!`);
     }
 

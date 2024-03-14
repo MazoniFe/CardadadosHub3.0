@@ -8,8 +8,8 @@ let infractions = [];
 
 const callFazenda = async (body, parent, supplierList, requestFlow) => {
     try {
-        let finesPanelresponse = await processFinesPanel(body, parent, supplierList, requestFlow);
-        return {response: finesPanelresponse, correctedInfractions : infractions};
+        let fazendaResponse = await processFazenda(body, parent, supplierList, requestFlow);
+        return {response: fazendaResponse};
     } catch (e) {
         console.error(e);
     }
@@ -19,13 +19,13 @@ const processFazenda = async (body, parent, supplierList, requestFlow) => {
     try {
         const parameters = body.parametros;
 
-        //const products = Object.entries(body.produtos).filter(([key, value]) => key !== body.ambito);
         let uf = parameters.uf || parameters.UF || findPropertyInJSON(parent, "uf");
         uf = uf.toLowerCase();
 
-        const products = supplierList.filter(item => item.Tipo_de_Consulta == "Fazenda" && item.origemUF == uf && item.ativo == true);
+        const products = supplierList.filter(item => Array.isArray(item.Tipo_de_Consulta) && item.Tipo_de_Consulta.length != 0 && item.Tipo_de_Consulta.includes("Fazenda") && (item.origemUF == uf || item.origemUF == "br"));
+        
         const productRequests = products.map(async item => {
-            const requestBody = { ambito: item.ambito, parametros: parameters, produtos: parameters.produtos };
+            const requestBody = { scope: item.ambito, parametros: parameters, produtos: parameters.produtos };
             let response = {};
 
             if(parent.logs.status.toUpperCase() == "SUCESSO") {
@@ -56,104 +56,13 @@ const processFazenda = async (body, parent, supplierList, requestFlow) => {
             productScope = productScope.toLowerCase() === "detran" ? productScope + parameters.uf : productScope;
             const productData = { response: result.value.content.response, logs: result.value.content.logs, logsError: result.value.content.logsError };
             resultObject[productScope.toLocaleLowerCase()] = productData;
-            processInfractionCorrections(result.value.content.response, result.value.supplier);
         });
-
 
         return resultObject;
     } catch (e) {
         console.error(e);
     }
 }
-
-const processInfractionCorrections = (response, supplier) => {
-    const supplierSource = supplier.fonte;
-    const infractionsField = findPropertyInJSON(response, supplier.infractions_campo);
-    const infra_standard = supplier.retorno_infra_padrao;
-
-    if (infractionsField != null && infractionsField != undefined) {
-        for (const infr of infractionsField) {
-            let corrected_infractions = {};
-            for (const key of Object.keys(infra_standard)) {
-                const propertyValue = findPropertyInJSON(infra_standard, key);
-                if (key === "Consultas") {
-                    corrected_infractions[key] = findPropertyInJSON(response, propertyValue) || 'Nao informado';
-                } else {
-                    corrected_infractions[key] = findPropertyInJSON(infr, propertyValue) || 'Nao informado';
-                }
-            }
-
-            const ait = corrected_infractions.ait;
-            const formated_ait = ait.replace(/[\s-]/g, '');
-            let short_ait;
-
-            switch (supplierSource) {
-                case 'FAZENDA':
-                case 'DER':
-                    short_ait = formated_ait.substring(1, 8);
-                    break;
-                case 'AIT':
-                case 'PREFEITURA':
-                case 'RENAINF':
-                    short_ait = formated_ait.substring(2, 9);
-                    break;
-                default:
-                    short_ait = formated_ait.substring(1, 8);
-                    break;
-            }
-
-            if (/[a-z]/i.test(short_ait)) {
-                short_ait = formated_ait.substring(2, 10);
-                if (/[a-z]/i.test(short_ait)) {
-                    short_ait = formated_ait.slice(-6);
-                }
-            }
-
-            if (short_ait.length <= 6) {
-                if (short_ait.length <= 5) {
-                    switch (fornecedor.fonte) {
-                        case 'FAZENDA':
-                        case 'DER':
-
-                            short_ait = formated_ait.substring(1, 7);
-                            break;
-                        case 'AIT':
-                        case 'PREFEITURA':
-                        case 'RENAINF':
-                            short_ait = formated_ait.substring(2, 9);
-                            break;
-                        default:
-                            short_ait = formated_ait.substring(1, 7);
-                            break;
-                    }
-                }
-                short_ait += '1';
-            }
-
-            if (infractions.some(item => item.ait === short_ait)) {
-                const existingItem = infractions.find(item => item.ait === short_ait);
-
-                if (normalizarValor(corrected_infractions.valor) > formatValue(existingItem.valor)) {
-                    infractions = infractions.filter(item => item.ait !== short_ait);
-                    corrected_infractions['ait'] = short_ait;
-                    infractions.push(corrected_infractions);
-                }
-            } else {
-                corrected_infractions['ait'] = short_ait;
-                infractions.push(corrected_infractions);
-            }
-        }
-    }
-}
-
-const formatValue = (value) => {
-    // Remove o símbolo de moeda e substitui a vírgula por ponto
-    const normalizedValue = parseFloat(value.toString().replace("R$", "").replace(",", ".").trim());
-
-    // Garante que o resultado é um número válido
-    return isNaN(normalizedValue) ? 0 : normalizedValue;
-}
-
 
 
 module.exports = { callFazenda, processFazenda };

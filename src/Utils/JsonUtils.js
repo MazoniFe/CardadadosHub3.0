@@ -21,8 +21,9 @@ const findPropertyInJSON = (jsonObj, targetProperty) => {
             }
         }
     }
+    
 
-    const targetParts = targetProperty ? targetProperty.split('-') : [];
+    const targetParts = targetProperty && typeof(targetProperty) == "string" ? targetProperty.split('-') : [];
     if (targetParts.length > 0) {
         searchRecursive(jsonObj, targetParts);
     }

@@ -21,8 +21,8 @@ const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
 
         let uf = parameters.uf || parameters.UF || findPropertyInJSON(parent, "uf");
         uf = uf.toLowerCase();
-
-        const products = supplierList.filter(item => item.Tipo_de_Consulta == "Painel de Multas" && item.origemUF == uf && item.ativo == true);
+        //const products = supplierList.filter(item => item.Tipo_de_Consulta != null && item.Tipo_de_Consulta.contains("Painel de Multas") && item.origemUF == uf && item.ativo == true);
+        const products = supplierList.filter(item => Array.isArray(item.Tipo_de_Consulta) && item.Tipo_de_Consulta.length != 0 && item.Tipo_de_Consulta.includes("Painel de Multas") && (item.origemUF == uf || item.origemUF == "br"));
         const productRequests = products.map(async item => {
             const requestBody = { scope: item.ambito, parametros: parameters, produtos: parameters.produtos };
             let response = {};

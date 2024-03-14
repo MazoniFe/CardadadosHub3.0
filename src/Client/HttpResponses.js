@@ -86,16 +86,62 @@ class FinesPanelResponse {
 }
 
 class FazendaResponse {
-    constructor(response, logs, finesPanel, parentLogsError, correctedInfractions) {
+    constructor(response, logs, fazendaResponse, parentLogsError) {
+
+        const buildedLists = this.buildList(fazendaResponse);
+
+        console.log(buildedLists);
+
         this.response = response;
         this.logs = logs;
-        this.painelMultas = finesPanel;
-        this.infracoesCorrigidas = correctedInfractions;
+        this.ipva = buildedLists.ipvaList || [];
+        this.dpvat = buildedLists.dpvatList || [];
+        this.licenciamentos= buildedLists.licenciamentoList || [];
+        this.divida_ativa = buildedLists.dividaList || [];
         this.logsError = [];
 
-        this.bindLogsError(finesPanel, parentLogsError);
-        this.painelMultas = this.removeLogsErrorFromProducts(finesPanel);
+        this.bindLogsError(fazendaResponse, parentLogsError);
 
+    }
+    isNotFalseProperty = (obj) =>  {
+        for (let prop in obj) {
+            if (obj[prop] !== "Não informado!") {
+                return false; 
+            }
+        }
+        return true; 
+    }
+
+    buildList = (response) => {
+        const ipvaList = [];
+        const dpvatList = [];
+        const licenciamentoList = [];
+        const dividaList = [];
+    
+        for (const key in response) {
+            const ipvaArray = response[key].response.ipva;
+            const dpvatArray = response[key].response.dpvat;
+            const licenciamentos = response[key].response.licenciamentos;
+            const divida_ativa = response[key].response.divida_ativa;
+    
+            if (ipvaArray && Array.isArray(ipvaArray) && ipvaArray.length == 1 && this.isNotFalseProperty(ipvaArray[0])) {
+                ipvaList.push(...ipvaArray);
+            }
+    
+            if (dpvatArray && Array.isArray(dpvatArray)) {
+                dpvatList.push(...dpvatArray);
+            }
+    
+            if (licenciamentos && Array.isArray(licenciamentos) && licenciamentos.length == 1 && this.isNotFalseProperty(licenciamentos[0])) {
+                licenciamentoList.push(...licenciamentos);
+            }
+    
+            if (divida_ativa && Array.isArray(divida_ativa) && divida_ativa.length == 1 && this.isNotFalseProperty(divida_ativa[0])) {
+                dividaList.push(...divida_ativa);
+            }
+        }
+    
+        return {ipvaList, dpvatList, licenciamentoList, dividaList};
     }
 
     bindLogsError(products, parentLogsError) {

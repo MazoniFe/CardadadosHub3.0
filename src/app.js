@@ -6,6 +6,7 @@ const { callAPIOrquest } = require('./Services/OrquestService');
 const { callFinesPanel } = require('./Services/FinesPanelService');
 const { FinesPanelResponse, CustomResponse, FazendaResponse } = require('./Client/HttpResponses'); // Mova esta linha para cima
 const { checkParameters } = require('./Services/ValidateService');
+const { callFazenda } = require('./Services/FazendaService');
 const app = express();
 const router = express.Router();
 
@@ -32,7 +33,7 @@ router.post('/buscar', async function (req, res) {
         } else if (requestFlow == 'fazenda') {
             const parentRequest = await callAPIIndividual(req.body, null, databaseResponse.data, requestFlow);
             const fazendaRequest = await callFazenda(req.body, parentRequest, databaseResponse.data, requestFlow);
-            response = new FazendaResponse(parentRequest.response, parentRequest.logs, fazendaRequest.response, parentRequest.logsError, fazendaRequest.correctedInfractions);
+            response = new FazendaResponse(parentRequest.response, parentRequest.logs, fazendaRequest.response, parentRequest.logsError);
         }
     }
     else {
