@@ -73,7 +73,7 @@ const buildURL = (supplier, parameter, parent) => {
       }      
       else {
         value =
-          parent[`${type.toLowerCase()}`] ||
+          findPropertyInJSON(parent, type.toLowerCase()) ||
           parameter[`${type.toLowerCase()}`];
       }
     } else {
@@ -163,8 +163,14 @@ const isRequestFailed = (supplier, apiResponse) => { // Certifique-se de lidar c
 };
 
 const getSupplierUf = (uf, parent) => {
-  if (uf != null && uf != undefined) return uf.toLowerCase();
-  else return findPropertyInJSON(parent, "uf")?.toLowerCase();
+  if (uf !== null && uf !== undefined && uf !== "") {
+    const mappedUF = uf.toLowerCase();
+    return mappedUF;
+  }
+  else {
+    const mappedUF = findPropertyInJSON(parent, "uf")?.toLowerCase();
+    return mappedUF;
+  }
 }
 
 module.exports = {

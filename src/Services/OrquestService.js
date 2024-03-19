@@ -14,21 +14,21 @@ const callAPIOrquest = async (body, parent ,supplierList, requestFlow) => {
 
 const processProductList = async (body, parent, supplierList, requestFlow) => {
     try {
-        const parameters = body.parametros;
-        const products = Object.entries(body.produtos).filter(([key, value]) => key !== body.ambito);
+        let response = {};
+        let parameters = body.parametros;
+        const products = Object.entries(body.produtos).filter(([key, value]) => key !== body.scope);
 
         const productRequests = products.map(async ([productScope, productData]) => {
-            const requestBody = { scope: productScope, parametros: parameters, produtos: productData };
-            let response = {};
-
-            const uf = getSupplierUf(parameters.uf, parent);
-            
+            console.log(parent);
+            parameters.uf = getSupplierUf(parameters.uf, parent.response || parent);
             const scope = productScope.toLowerCase();
 
+            const requestBody = { scope: productScope, parametros: parameters, produtos: {[productScope]: productData} };
             if (parent.logs.status.toUpperCase() == "SUCESSO") {
                 response = await callAPIIndividual(requestBody, parent, supplierList, requestFlow);
             } else {
                 const productListFiltered = supplierList.filter(item => item.ambito == scope && item.ativo == true);
+                console.log(productListFiltered);
                 
                 // Se houver itens na lista filtrada, crie uma resposta com falha
                 if (productListFiltered.length > 0) {

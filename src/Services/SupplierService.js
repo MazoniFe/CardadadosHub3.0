@@ -1,3 +1,4 @@
+const { response } = require("express");
 const { getSupplierUf } = require("../Utils/HttpUtils");
 const { findPropertyInJSON, fillEmptyArraysWithObject, editAllJsonProperties, applyTrimToJSONStrings } = require("../Utils/JsonUtils");
 const { compareOrder } = require("../Utils/PrimitiveUtils");
@@ -9,15 +10,15 @@ const mappingSupplierResponse = (supplier, response, logs) => {
             let targetResponse = supplier.retorno_padrao;
             for (const key in targetResponse) {
                 const propertyValue = findPropertyInJSON(targetResponse, key) || key;
-                
+
                 const isObject = typeof (propertyValue);
                 if (propertyValue != null && isObject == "object") {
                     let newListResponse = [];
                     const standardList = propertyValue.retornoPadrao;
                     const listPropertyValue = findPropertyInJSON(response, propertyValue.campoNome) || null;
 
-                    if (listPropertyValue == null ||listPropertyValue.length === 0) {
-                        if(isObjectOrArray(propertyValue) && propertyValue.retornoPadrao){
+                    if (listPropertyValue == null || listPropertyValue.length === 0) {
+                        if (isObjectOrArray(propertyValue) && propertyValue.retornoPadrao) {
                             newListResponse.push(getFailedStandardList(propertyValue.retornoPadrao));
                         } else {
                             newListResponse = getFailedStandardList(propertyValue.retornoPadrao);
@@ -29,28 +30,28 @@ const mappingSupplierResponse = (supplier, response, logs) => {
                             let newList = {};
                             Object.keys(standardList).forEach(key => {
                                 const value = standardList[key];
-                                const filteredValue = findPropertyInJSON(element, value) || "Não informado!";
-                                
-                                newList = { ...newList, [key]: filteredValue };
-                            });
-                            newListResponse.push(newList);
-                        });
-                    } 
-                    else if (listPropertyValue && listPropertyValue != null && typeof (listPropertyValue) == "object") {
-                        Object.keys(listPropertyValue).forEach(element => {
-                            let newList = {};
-                            Object.keys(standardList).forEach(key => {
-                                const value = standardList[key];
-                                const filteredValue = findPropertyInJSON(listPropertyValue[element], value) || "Não informado!";
+                                const filteredValue = findPropertyInJSON(element, value) || "Não informado";
+
                                 newList = { ...newList, [key]: filteredValue };
                             });
                             newListResponse.push(newList);
                         });
                     }
-                    
+                    else if (listPropertyValue && listPropertyValue != null && typeof (listPropertyValue) == "object") {
+                        Object.keys(listPropertyValue).forEach(element => {
+                            let newList = {};
+                            Object.keys(standardList).forEach(key => {
+                                const value = standardList[key];
+                                const filteredValue = findPropertyInJSON(listPropertyValue[element], value) || "Não informado";
+                                newList = { ...newList, [key]: filteredValue };
+                            });
+                            newListResponse.push(newList);
+                        });
+                    }
+
                     targetResponse[key] = newListResponse;
                 } else {
-                    targetResponse[key] = findPropertyInJSON(response, propertyValue) || "Não informado!";
+                    targetResponse[key] = findPropertyInJSON(response, propertyValue) || "Não informado";
                 }
 
             }
@@ -69,7 +70,10 @@ const mappingSupplierResponse = (supplier, response, logs) => {
 const filterSupplierListByScopeAndRequestFlow = (scope, parameter, products, requestFlow, supplierList, parent) => {
 
     let filteredList = supplierList;
-    const uf = getSupplierUf(parameter.uf, parent);
+    let uf;
+
+    if (parent && parent.response != null && parent.response != undefined) uf = getSupplierUf(parameter.uf, parent['response'])
+    else if (parent) uf = getSupplierUf(parameter.uf, parent);
 
     if (products && products[scope] && products[scope].length > 0) {
         filteredList = filteredList.filter(item => products[scope].includes(item.id));
@@ -87,23 +91,23 @@ const filterSupplierListByScopeAndRequestFlow = (scope, parameter, products, req
 }
 
 const isObjectOrArray = (obj) => {
-    return typeof(obj) == "object" || typeof(obj) == Array;
+    return typeof (obj) == "object" || typeof (obj) == Array;
 }
 
 const getFailedStandardList = (json) => {
     let response = {};
-    
+
     if (typeof (json) == "object") {
         Object.keys(json).forEach(item => {
-            response = { ...response, [item]: "Não informado!" };
+            response = { ...response, [item]: "Não informado" };
         })
     } else if (typeof (json) == Array) {
         json.forEach(item => {
-            response = { ...response, [item]: "Não informado!" };
+            response = { ...response, [item]: "Não informado" };
         })
     }
     else {
-        response = "Não informado!";
+        response = "Não informado";
     }
     return response;
 }

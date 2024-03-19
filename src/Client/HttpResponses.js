@@ -102,7 +102,7 @@ class FazendaResponse {
     }
     isNotFalseProperty = (obj) =>  {
         for (let prop in obj) {
-            if (obj[prop] !== "Não informado!") {
+            if (obj[prop] !== "Não informado") {
                 return false; 
             }
         }

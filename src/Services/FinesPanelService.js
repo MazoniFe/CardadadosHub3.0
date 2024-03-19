@@ -75,9 +75,9 @@ const processInfractionCorrections = (response, supplier) => {
             for (const key of Object.keys(infra_standard)) {
                 const propertyValue = findPropertyInJSON(infra_standard, key);
                 if (key === "Consultas") {
-                    corrected_infractions[key] = findPropertyInJSON(response, propertyValue) || 'Nao informado';
+                    corrected_infractions[key] = findPropertyInJSON(response, propertyValue) || 'Não informado';
                 } else {
-                    corrected_infractions[key] = findPropertyInJSON(infr, propertyValue) || 'Nao informado';
+                    corrected_infractions[key] = findPropertyInJSON(infr, propertyValue) || 'Não informado';
                 }
             }
             const ait = corrected_infractions.ait;

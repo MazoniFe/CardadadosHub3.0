@@ -62,7 +62,7 @@ const fillEmptyArraysWithObject = (jsonData) => {
         if (jsonData.length === 0) {
             return [
                 {
-                    "Mensagem": "Nao Informado!"
+                    "Mensagem": "Não Informado"
                 }
             ];
         }
