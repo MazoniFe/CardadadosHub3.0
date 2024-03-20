@@ -19,7 +19,6 @@ const processProductList = async (body, parent, supplierList, requestFlow) => {
         const products = Object.entries(body.produtos).filter(([key, value]) => key !== body.scope);
 
         const productRequests = products.map(async ([productScope, productData]) => {
-            console.log(parent);
             parameters.uf = getSupplierUf(parameters.uf, parent.response || parent);
             const scope = productScope.toLowerCase();
 
@@ -28,7 +27,6 @@ const processProductList = async (body, parent, supplierList, requestFlow) => {
                 response = await callAPIIndividual(requestBody, parent, supplierList, requestFlow);
             } else {
                 const productListFiltered = supplierList.filter(item => item.ambito == scope && item.ativo == true);
-                console.log(productListFiltered);
                 
                 // Se houver itens na lista filtrada, crie uma resposta com falha
                 if (productListFiltered.length > 0) {

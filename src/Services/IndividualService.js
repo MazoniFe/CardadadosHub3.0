@@ -23,7 +23,7 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
     for (let supplier of supplierList) {
         try {
             if (requestSuccess) continue;
-            url = buildURL(supplier, parameter, parent);
+            const url = buildURL(supplier, parameter, parent);
             currentDate = Date.now();
             response = await callAPIWithTimeout(url, supplier, supplier.timeout || 12000);
             logs = new Logs(url, response, supplier, currentDate, null);
@@ -38,7 +38,7 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
             response = mappingSupplierResponse(supplier, response, logs);
         } catch (e) {
             response = getFailedResponse(e.data);
-            url = buildURL(e.data, parameter, parent);
+            const url = buildURL(e.data, parameter, parent);
             logs = new Logs(url, response, e.data, currentDate, e.error);
             logs.setStatus("FALHA");
             logsError.addLog(logs);
