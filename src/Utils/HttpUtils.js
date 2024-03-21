@@ -65,9 +65,9 @@ const buildURL = (supplier, parameter, parent) => {
           findPropertyInJSON(parent, "ndocumento") ||
           findPropertyInJSON(parent, "cpf_cnpj") ||
           findPropertyInJSON(parent, "Cpf_Cnpj");
-          value = value.replace(/[-.()]+/g, "");
-      } 
-      if (type.toLowerCase() == "uf") {
+          
+          value = value != undefined && value != null ? value.replace(/[-.()]+/g, "") : "";
+      } else if (type.toLowerCase() == "uf") {
         const uf = parameter.uf || parameter.UF;
         value = getSupplierUf(uf, parent)
       }      
@@ -76,7 +76,8 @@ const buildURL = (supplier, parameter, parent) => {
           findPropertyInJSON(parent, type.toLowerCase()) ||
           parameter[`${type.toLowerCase()}`];
       }
-    } else {
+    } 
+      else {
       value = parameter[`${type.toLowerCase()}`];
     }
     placeholder = `{{!${type.toLowerCase()}!}}`;

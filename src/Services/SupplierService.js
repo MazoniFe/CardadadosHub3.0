@@ -12,16 +12,13 @@ const mappingSupplierResponse = (supplier, response, logs) => {
             // Itera sobre as chaves do padrão de resposta
             for (const key in targetResponse) {
                 const propertyValue = findPropertyInJSON(targetResponse, key);
-                if(key.toLowerCase() == "leilao") {
-                const test =  findPropertyInJSON(response, "Leilao");        
-                }
-
                 const isObject = typeof (propertyValue);
 
                 // Verifica se o valor é um objeto
                 if (isObject == "object") {
                     targetResponse[key] = mapObjectResponse(propertyValue, response);
                 } else {
+                    // Se não for um objeto, mapeia o valor simples
                     targetResponse[key] = mapSimpleValue(propertyValue, response);
                 }
             }
@@ -112,14 +109,15 @@ const mapObjectResponse = (propertyValue, response) => {
 
     // Obtém o padrão de lista e o valor da lista na resposta
     const standardList = propertyValue.retornoPadrao;
-    const listPropertyValue = findPropertyInJSON(response, propertyValue.campoNome) || [];
+    const listPropertyValue = findPropertyInJSON(response, propertyValue.campoNome) || null;
 
-    // Verifica se o valor da lista está vazio
-    if (listPropertyValue.length === 0) {
-        console.log(propertyValue.campoNome);
-        newListResponse.push("Lista vazia");
-    } else {
-        // Se o valor da lista não estiver vazio, continue com o mapeamento normal
+    // Se o valor da lista não existir na resposta
+    if (listPropertyValue == null) {
+        newListResponse = {Mensagem: "Não informado"};
+    }
+
+    // Se o valor da lista existir na resposta
+    if (listPropertyValue) {
         // Verifica o tipo do valor da lista
         if (Array.isArray(listPropertyValue)) {
             // Se for um array, mapeia cada elemento do array
@@ -127,17 +125,12 @@ const mapObjectResponse = (propertyValue, response) => {
                 newListResponse.push(mapListElement(standardList, element));
             });
         } else if (typeof (listPropertyValue) == "object") {
-            // Se for um objeto, mapeia as propriedades do objeto
-            newListResponse.push({Mensagem: "Não informado"})
-            Object.keys(listPropertyValue).forEach(element => {
-                //newListResponse.push(mapListElement(standardList, listPropertyValue[element]));
-            });
+            newListResponse.push({Mensagem: "Não informado!"});
         }
     }
     
     return newListResponse;
 }
-
 
 const getFailedResponse = (supplier) => {
     const response = editAllJsonProperties(supplier.retorno_padrao, "Indisponível");

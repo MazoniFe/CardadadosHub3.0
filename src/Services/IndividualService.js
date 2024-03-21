@@ -20,8 +20,10 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
     let logsError = new LogsError(scope);
     let logs;
     let currentDate;
+    let currentSupplier;
     for (let supplier of supplierList) {
         try {
+            currentSupplier = supplier;
             if (requestSuccess) continue;
             const url = buildURL(supplier, parameter, parent);
             currentDate = Date.now();
@@ -32,13 +34,15 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
                 requestSuccess = true;
                 logs.setMessage("Requisicao realizada com sucesso!");
             } else {
+                response = getFailedResponse(supplier);
                 logs = new Logs(url, response, supplier, currentDate, getErrorMessageResponse(response));
                 logsError.addLog(logs);
+                continue;
             }
             response = mappingSupplierResponse(supplier, response, logs);
         } catch (e) {
-            response = getFailedResponse(e.data);
-            const url = buildURL(e.data, parameter, parent);
+            response = getFailedResponse(currentSupplier);
+            const url = buildURL(currentSupplier, parameter, parent);
             logs = new Logs(url, response, e.data, currentDate, e.error);
             logs.setStatus("FALHA");
             logsError.addLog(logs);

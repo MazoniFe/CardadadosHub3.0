@@ -48,7 +48,6 @@ const callAPI = async (urlData, supplier) => {
                 // Criando resposta da API
                 resultData = responseAPI.res.data;
             }
-            
             return resultData;
         } 
     

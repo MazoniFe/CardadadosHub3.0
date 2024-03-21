@@ -28,7 +28,6 @@ const processProductList = async (body, parent, supplierList, requestFlow) => {
             } else {
                 const productListFiltered = supplierList.filter(item => item.ambito == scope && item.ativo == true);
                 
-                // Se houver itens na lista filtrada, crie uma resposta com falha
                 if (productListFiltered.length > 0) {
                     const item = productListFiltered[0];
                     const data = getFailedResponse(item);
