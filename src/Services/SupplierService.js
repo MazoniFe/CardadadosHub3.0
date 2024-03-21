@@ -47,7 +47,7 @@ const filterSupplierListByScopeAndRequestFlow = (scope, parameter, products, req
     let uf;
 
     if (parent && parent.response != null && parent.response != undefined) uf = getSupplierUf(parameter.uf, parent['response'])
-    else if (parent) uf = getSupplierUf(parameter.uf, parent);
+    else uf = getSupplierUf(parameter.uf, parent);
 
     if (products && products[scope] && products[scope].length > 0) {
         filteredList = filteredList.filter(item => products[scope].includes(item.id));
@@ -56,8 +56,8 @@ const filterSupplierListByScopeAndRequestFlow = (scope, parameter, products, req
         filteredList = filteredList.filter(item => item.Tipo_de_Consulta === 'Painel de Multas' && item.origemUF.toLowerCase() == uf && item.ativo === true);
     } else {
         filteredList = scope.toLowerCase() === "detran"
-            ? filteredList.filter(item => item.ambito === scope && item.ativo === true && item.origemUF.toLowerCase() == uf.toLowerCase())
-            : filteredList.filter(item => item.ambito === scope && item.ativo === true);
+            ? filteredList.filter(item => item.ambito == scope && item.ativo == true && item.origemUF.toLowerCase() == uf.toLowerCase())
+            : filteredList.filter(item => item.ambito == scope && item.ativo == true);
     }
 
     filteredList.sort(compareOrder);
