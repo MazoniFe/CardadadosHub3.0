@@ -1,5 +1,4 @@
 const { isRequestFailed } = require("../Utils/HttpUtils");
-const { findPropertyInJSON } = require("../Utils/JsonUtils");
 const { getFormattedDateTime } = require("../Utils/dateUtils");
 
 class Logs {
