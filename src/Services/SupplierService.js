@@ -32,8 +32,7 @@ const mappingSupplierResponse = (supplier, response, logs) => {
             // Retorna a resposta mapeada
             return targetResponse;
         } catch (err) {
-            // Em caso de erro, loga o erro
-            console.error(err);
+            return getFailedResponse(supplier);
         }
     } else {
         // Se o status não for "SUCESSO", retorna uma resposta de falha
