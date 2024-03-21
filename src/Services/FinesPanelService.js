@@ -4,12 +4,10 @@ const { findPropertyInJSON } = require("../Utils/JsonUtils");
 const { callAPIIndividual } = require("./IndividualService");
 const { getFailedResponse } = require("./SupplierService");
 
-let infractions = [];
-
 const callFinesPanel = async (body, parent, supplierList, requestFlow) => {
     try {
         let finesPanelresponse = await processFinesPanel(body, parent, supplierList, requestFlow);
-        return {response: finesPanelresponse, correctedInfractions : infractions};
+        return {response: finesPanelresponse.response, correctedInfractions : finesPanelresponse.infractions};
     } catch (e) {
         console.error(e);
     }
@@ -18,7 +16,6 @@ const callFinesPanel = async (body, parent, supplierList, requestFlow) => {
 const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
     try {
         const parameters = body.parametros;
-
         let uf = parameters.uf || parameters.UF || findPropertyInJSON(parent, "uf");
         uf = uf.toLowerCase();
         const products = supplierList.filter(item => Array.isArray(item.Tipo_de_Consulta) && item.Tipo_de_Consulta.length != 0 && item.Tipo_de_Consulta.includes("Painel de Multas") && (item.origemUF == uf || item.origemUF == "br"));
@@ -46,6 +43,7 @@ const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
         const promiseResults = await Promise.allSettled(productRequests);
 
         const resultObject = {};
+        let infractions = [];
 
         // Iterar sobre os resultados das promessas
         promiseResults.forEach((result, index) => {
@@ -54,22 +52,23 @@ const processFinesPanel = async (body, parent, supplierList, requestFlow) => {
             productScope = productScope.toLowerCase() === "detran" ? productScope + parameters.uf : productScope;
             const productData = { response: result.value.content.response, logs: result.value.content.logs, logsError: result.value.content.logsError };
             resultObject[productScope.toLocaleLowerCase()] = productData;
-            processInfractionCorrections(result.value.content.response, result.value.supplier);
+            infractions = processInfractionCorrections(productData.response, result.value.supplier, infractions);
         });
+        const responseObject = {response: resultObject, infractions: infractions};
 
-
-        return resultObject;
+        return responseObject;
     } catch (e) {
         console.error(e);
     }
 }
 
-const processInfractionCorrections = (response, supplier) => {
+const processInfractionCorrections = (response, supplier, infractions) => {
     const supplierSource = supplier.fonte;
     const infractionsField = findPropertyInJSON(response, supplier.infracoes_campo);
     const infra_standard = supplier.retorno_infra_padrao;
+    let newInfractions = infractions;
 
-    if (infractionsField != null && infractionsField != undefined) {
+    if (infractionsField != null && infractionsField != undefined && infractionsField != "Indisponível" ) {
         for (const infr of infractionsField) {
             let corrected_infractions = {};
             for (const key of Object.keys(infra_standard)) {
@@ -81,6 +80,10 @@ const processInfractionCorrections = (response, supplier) => {
                 }
             }
             const ait = corrected_infractions.ait;
+
+            if(ait == "Não informado") {
+                return infractions;
+            }
             const formated_ait = ait.replace(/[\s-]/g, '');
             let short_ait;
 
@@ -128,20 +131,22 @@ const processInfractionCorrections = (response, supplier) => {
             }
 
             if (infractions.some(item => item.ait === short_ait)) {
-                const existingItem = infractions.find(item => item.ait === short_ait);
+                const existingItem = newInfractions.find(item => item.ait === short_ait);
 
                 if (formatValue(corrected_infractions.valor) > formatValue(existingItem.valor)) {
-                    infractions = infractions.filter(item => item.ait !== short_ait);
+                    newInfractions = newInfractions.filter(item => item.ait !== short_ait);
                     corrected_infractions['ait'] = short_ait;
-                    infractions.push(corrected_infractions);
+                    newInfractions.push(corrected_infractions);
                 }
             } 
             else {
                 corrected_infractions['ait'] = short_ait;
-                infractions.push(corrected_infractions);
+                newInfractions.push(corrected_infractions);
             }
         }
     }
+
+    return newInfractions;
 }
 
 const formatValue = (value) => {
