@@ -36,7 +36,7 @@ const mappingSupplierResponse = (supplier, response, logs) => {
         }
     } else {
         // Se o status não for "SUCESSO", retorna uma resposta de falha
-        return getFailedResponse(supplier.retorno_padrao);
+        return getFailedResponse(supplier);
     }
 }
 
