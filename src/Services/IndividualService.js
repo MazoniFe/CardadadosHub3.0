@@ -27,19 +27,19 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
             if (requestSuccess) continue;
             const url = buildURL(supplier, parameter, parent);
             currentDate = Date.now();
-            response = await callAPIWithTimeout(url, supplier, supplier.timeout || 12000);
-            logs = new Logs(url, response, supplier, currentDate, null);
+            const apiResponse = await callAPIWithTimeout(url, supplier, supplier.timeout || 12000);
+            logs = new Logs(url, apiResponse, supplier, currentDate, null);
 
             if (logs.status.toUpperCase() == "SUCESSO") {
                 requestSuccess = true;
+                response = mappingSupplierResponse(supplier, apiResponse, logs);
                 logs.setMessage("Requisicao realizada com sucesso!");
             } else {
                 response = getFailedResponse(supplier);
-                logs = new Logs(url, response, supplier, currentDate, getErrorMessageResponse(response));
+                logs = new Logs(url, response, supplier, currentDate, getErrorMessageResponse(apiResponse));
                 logsError.addLog(logs);
                 continue;
             }
-            response = mappingSupplierResponse(supplier, response, logs);
         } catch (e) {
             const failedResponse = getFailedResponse(currentSupplier);
             const url = buildURL(currentSupplier, parameter, parent);

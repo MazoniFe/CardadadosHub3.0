@@ -65,7 +65,6 @@ const buildURL = (supplier, parameter, parent) => {
           findPropertyInJSON(parent, "ndocumento") ||
           findPropertyInJSON(parent, "cpf_cnpj") ||
           findPropertyInJSON(parent, "Cpf_Cnpj");
-          
           value = value != undefined && value != null ? value.replace(/[-.()]+/g, "") : "";
       } else if (type.toLowerCase() == "uf") {
         const uf = parameter.uf || parameter.UF;

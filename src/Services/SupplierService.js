@@ -15,7 +15,7 @@ const mappingSupplierResponse = (supplier, response, logs) => {
                 const isObject = typeof (propertyValue);
 
                 // Verifica se o valor é um objeto
-                if (isObject == "object") {
+                if (isObject == "object" && propertyValue != null && propertyValue != undefined) {
                     targetResponse[key] = mapObjectResponse(propertyValue, response);
                 } else {
                     // Se não for um objeto, mapeia o valor simples
@@ -32,7 +32,7 @@ const mappingSupplierResponse = (supplier, response, logs) => {
             // Retorna a resposta mapeada
             return targetResponse;
         } catch (err) {
-            return getFailedResponse(supplier);
+            console.error(err);
         }
     } else {
         // Se o status não for "SUCESSO", retorna uma resposta de falha
@@ -82,8 +82,6 @@ const mapListElement = (standardList, element) => {
 
 const mapObjectResponse = (propertyValue, response) => {
     let newListResponse = [];
-
-    // Obtém o padrão de lista e o valor da lista na resposta
     const standardList = propertyValue.retornoPadrao;
     const listPropertyValue = findPropertyInJSON(response, propertyValue.campoNome) || null;
 
