@@ -58,7 +58,20 @@ const buildURL = (supplier, parameter, parent) => {
   for (let type of supplier.tipos) {
     let value;
     if (parent != null || parent != undefined) {
-      if (type.toLowerCase() == "cnpj" || type.toLowerCase() == "cpf") {
+      if (type.toLowerCase() == "cpf") {
+        value =
+          findPropertyInJSON(parent, "cpf") ||
+          findPropertyInJSON(parent, "cnpj") ||
+          findPropertyInJSON(parent, "ndocumento") ||
+          findPropertyInJSON(parent, "cpf_cnpj") ||
+          findPropertyInJSON(parent, "Cpf_Cnpj");
+
+          //VALIDAÇÃO PARA CHECAR O LENGTH DO CPF, SE FOR != 11 significa que é invalido
+          value = value != undefined && value != null ? value.replace(/[-.()]+/g, "") : "";
+        if(!(type.toLowerCase() == "cpf" && value.length == 11))  value = "";
+      } 
+
+      else if (type.toLowerCase() == "cnpj") {
         value =
           findPropertyInJSON(parent, "cpf") ||
           findPropertyInJSON(parent, "cnpj") ||
@@ -66,7 +79,11 @@ const buildURL = (supplier, parameter, parent) => {
           findPropertyInJSON(parent, "cpf_cnpj") ||
           findPropertyInJSON(parent, "Cpf_Cnpj");
           value = value != undefined && value != null ? value.replace(/[-.()]+/g, "") : "";
-      } else if (type.toLowerCase() == "uf") {
+                    //VALIDAÇÃO PARA CHECAR O LENGTH DO CNPJ, SE FOR != 14 significa que é invalido
+          if(!(type.toLowerCase() == "cnpj" && value.length == 14))  value = "";
+      } 
+      
+      else if (type.toLowerCase() == "uf") {
         const uf = parameter.uf || parameter.UF;
         value = getSupplierUf(uf, parent)
       }      
