@@ -41,9 +41,9 @@ const processSupplier = async (supplierList, scope, parameter, parent) => {
             }
             response = mappingSupplierResponse(supplier, response, logs);
         } catch (e) {
-            response = getFailedResponse(currentSupplier);
+            const failedResponse = getFailedResponse(currentSupplier);
             const url = buildURL(currentSupplier, parameter, parent);
-            logs = new Logs(url, response, e.data, currentDate, e.error);
+            logs = new Logs(url, failedResponse, supplier, currentDate, getErrorMessageResponse(response));
             logs.setStatus("FALHA");
             logsError.addLog(logs);
             continue;

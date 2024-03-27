@@ -63,40 +63,17 @@ const filterSupplierListByScopeAndRequestFlow = (scope, parameter, products, req
     return filteredList;
 }
 
-const isObjectOrArray = (obj) => {
-    return typeof (obj) == "object" || typeof (obj) == Array;
-}
-
-const getFailedStandardList = (json) => {
-    let response = {};
-
-    if (typeof (json) == "object") {
-        Object.keys(json).forEach(item => {
-            response = { ...response, [item]: "Não informado" };
-        })
-    } else if (typeof (json) == Array) {
-        json.forEach(item => {
-            response = { ...response, [item]: "Não informado" };
-        })
-    }
-    else {
-        response = "Não informado";
-    }
-    return response;
-}
-
 const mapSimpleValue = (propertyValue, response) => {
-    // Mapeia o valor simples na resposta
-    return findPropertyInJSON(response, propertyValue) || "Não informado!";
+
+    return findPropertyInJSON(response, propertyValue) || "Não informado";
 }
 
 const mapListElement = (standardList, element) => {
     let newList = {};
 
-    // Para cada chave no padrão de lista, mapeia o valor correspondente
     Object.keys(standardList).forEach(key => {
         const value = standardList[key];
-        const filteredValue = findPropertyInJSON(element, value) || "Não informado!";
+        const filteredValue = findPropertyInJSON(element, value) || "Não informado";
         newList = { ...newList, [key]: filteredValue };
     });
 
@@ -119,12 +96,16 @@ const mapObjectResponse = (propertyValue, response) => {
     if (listPropertyValue) {
         // Verifica o tipo do valor da lista
         if (Array.isArray(listPropertyValue)) {
-            // Se for um array, mapeia cada elemento do array
-            listPropertyValue.forEach(element => {
-                newListResponse.push(mapListElement(standardList, element));
-            });
+            if(listPropertyValue.length === 0) {
+                newListResponse.push({Mensagem: "Não informado"})
+            } else {
+                listPropertyValue.forEach(element => {
+                    newListResponse.push(mapListElement(standardList, element));
+                });
+            }
+
         } else if (typeof (listPropertyValue) == "object") {
-            newListResponse.push({Mensagem: "Não informado!"});
+            newListResponse.push({Mensagem: "Não informado"});
         }
     }
     
