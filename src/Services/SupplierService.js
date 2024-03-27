@@ -14,7 +14,6 @@ const mappingSupplierResponse = (supplier, response, logs) => {
                 const propertyValue = findPropertyInJSON(targetResponse, key);
                 const isObject = typeof (propertyValue);
 
-                // Verifica se o valor é um objeto
                 if (isObject == "object" && propertyValue != null && propertyValue != undefined) {
                     targetResponse[key] = mapObjectResponse(propertyValue, response);
                 } else {
@@ -64,7 +63,6 @@ const filterSupplierListByScopeAndRequestFlow = (scope, parameter, products, req
 }
 
 const mapSimpleValue = (propertyValue, response) => {
-
     return findPropertyInJSON(response, propertyValue) || "Não informado";
 }
 
